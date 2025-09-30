@@ -8,7 +8,12 @@ and matched lines.
 """
 
 import re
+import json
+import sys
+import argparse
+import logging
 from typing import List, Dict, Any, Tuple, Optional
+from enum import Enum
 
 
 def is_separator_line(line: str) -> bool:
@@ -81,27 +86,27 @@ def is_context_line(line: str) -> bool:
     pattern = r'^[^:]+-\d+-'
     return bool(re.match(pattern, line))
 
+class LineType(Enum):
+    SEPARATOR = "separator"
+    CONTEXT = "context"
+    MATCHED = "matched" 
 
-def extract_file_and_line(line: str) -> Tuple[Optional[str], Optional[int]]:
+def parse_git_grep_line(line: str) -> Tuple[LineType, Optional[str], Optional[int], Optional[str]]:
     """
-    Extract file path and line number from a git grep line.
+    Parse a line from git grep output.
     
     Args:
         line: The line to parse
-        
-    Returns:
-        Tuple of (file_path, line_number)
     """
-    if ':' in line:
-        parts = line.split(':', 2)
-        if len(parts) >= 2:
-            file_path = parts[0]
-            try:
-                line_number = int(parts[1])
-                return file_path, line_number
-            except ValueError:
-                return None, None
-    return None, None
+    if is_separator_line(line):
+        return LineType.SEPARATOR, None, None, None
+    parsed_context_line = parse_context_line(line)
+    if parsed_context_line[0]:
+        return LineType.CONTEXT, parsed_context_line[1], parsed_context_line[2], parsed_context_line[3]
+    parsed_matched_line = parse_matched_line(line)
+    if parsed_matched_line[0]:
+        return LineType.MATCHED, parsed_matched_line[1], parsed_matched_line[2], parsed_matched_line[3]
+    raise ValueError(f"Invalid line: {line}")
 
 
 def parse_git_grep_output(output: str) -> List[Dict[str, Any]]:
@@ -152,55 +157,140 @@ def parse_git_grep_output(output: str) -> List[Dict[str, Any]]:
     Returns:
         List of snippet dictionaries. Each snippet dictionary contains the following keys:
         - file_path: The path to the file containing the snippet
-        - sprintf_line: The line numbers of the sprintf calls. Note that this can be a list of line numbers
-            if there are multiple sprintf calls in the snippet spanning multiple lines.
-        - context_lines: A list of context lines surrounding the sprintf calls.
-        - raw_content: The raw content of the snippet. This includes the sprintf call and the context lines.
+        - matched_lines: The line numbers of matched lines. Note that this can be a list of line numbers
+            if there are multiple matched lines in the snippet spanning multiple lines.
+        - context_lines: A list of context lines numbers surrounding the matched lines.
+        - raw_surrounding_git_grep_lines: The raw content of the snippet. This includes the matched line and the context lines.
     """
     snippets = []
     current_snippet = None
-
-    for line in output.split('\n'):
-        if not line.strip():
-            continue
-            
-        # Skip separator lines
-        if is_separator_line(line):
-            # Save previous snippet if exists
-            if current_snippet:
+    
+    lines = output.strip().split('\n')
+    
+    for line in lines:
+        line_type, filename, line_number, content = parse_git_grep_line(line)
+        
+        if line_type == LineType.SEPARATOR:
+            # Save current snippet if it exists
+            if current_snippet is not None:
                 snippets.append(current_snippet)
                 current_snippet = None
             continue
-            
-        # Check if this is a matched line (contains sprintf)
-        is_matched, file_path, line_number, content = parse_matched_line(line)
-        if is_matched:
-            if file_path and line_number:
-                # If we have a current snippet and it's the same file, add to existing snippet
-                if current_snippet and current_snippet["file_path"] == file_path:
-                    # For now, just update the raw content (multiple sprintf calls in same snippet not supported)
-                    current_snippet["raw_content"] += "\n" + line
-                else:
-                    # Save previous snippet if exists
-                    if current_snippet:
-                        snippets.append(current_snippet)
-                    
-                    # Start new snippet
-                    current_snippet = {
-                        "file_path": file_path,
-                        "sprintf_line": line_number,  # Single line number
-                        "context_lines": [],
-                        "raw_content": line
-                    }
-                
-        elif current_snippet and is_context_line(line):
-            # This is a context line (before or after the match)
-            # Format: filename-line_number- content
-            current_snippet["context_lines"].append(line)
-            current_snippet["raw_content"] += "\n" + line
-            
-    # Add the last snippet
-    if current_snippet:
-        snippets.append(current_snippet)
         
+        if current_snippet is None:
+            current_snippet = {
+                'file_path': filename,
+                'matched_lines': [],
+                'context_lines': [],
+                'raw_surrounding_git_grep_lines': [],
+                'raw_content': []
+            }
+        current_snippet['raw_surrounding_git_grep_lines'].append(line)
+        current_snippet['raw_content'].append(content)
+        if line_type == LineType.MATCHED:
+            current_snippet['matched_lines'].append(line_number)
+        elif line_type == LineType.CONTEXT:
+            current_snippet['context_lines'].append(line_number)
+    
+    # Don't forget to add the last snippet if it exists
+    if current_snippet is not None:
+        snippets.append(current_snippet)
+
     return snippets
+
+def setup_logging(debug: bool = False) -> None:
+    """Set up logging configuration for debugging."""
+    level = logging.DEBUG if debug else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+
+def main():
+    """Main function to handle command-line execution."""
+    parser = argparse.ArgumentParser(
+        description="Parse git grep output and generate JSON snippets",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Parse git grep output from stdin and save to output.json
+  git grep -n --context 2 sprintf -- *.c *.cc *.h | python git_grep_parser.py
+  
+  # Parse with debug output
+  git grep -n --context 2 sprintf -- *.c *.cc *.h | python git_grep_parser.py --debug
+  
+  # Specify custom output file
+  git grep -n --context 2 sprintf -- *.c *.cc *.h | python git_grep_parser.py --output my_snippets.json
+        """
+    )
+    
+    parser.add_argument(
+        '--output', '-o',
+        default='output.json',
+        help='Output JSON file path (default: output.json)'
+    )
+    
+    parser.add_argument(
+        '--debug', '-d',
+        action='store_true',
+        help='Enable debug logging'
+    )
+    
+    parser.add_argument(
+        '--input', '-i',
+        help='Input file path (if not provided, reads from stdin)'
+    )
+    
+    args = parser.parse_args()
+    
+    # Set up logging
+    setup_logging(args.debug)
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Read input
+        if args.input:
+            logger.info(f"Reading input from file: {args.input}")
+            with open(args.input, 'r', encoding='utf-8') as f:
+                input_data = f.read()
+        else:
+            logger.info("Reading input from stdin")
+            input_data = sys.stdin.read()
+        
+        if not input_data.strip():
+            logger.warning("No input data provided")
+            return
+        
+        # Parse the git grep output
+        logger.info("Parsing git grep output...")
+        snippets = parse_git_grep_output(input_data)
+        
+        logger.info(f"Parsed {len(snippets)} snippets")
+        
+        # Write output to JSON file
+        logger.info(f"Writing output to: {args.output}")
+        with open(args.output, 'w', encoding='utf-8') as f:
+            json.dump(snippets, f, indent=2, ensure_ascii=False)
+        
+        logger.info(f"Successfully wrote {len(snippets)} snippets to {args.output}")
+        
+        # Print summary to stderr so it doesn't interfere with piping
+        print(f"Parsed {len(snippets)} snippets and saved to {args.output}", file=sys.stderr)
+        
+    except FileNotFoundError as e:
+        logger.error(f"File not found: {e}")
+        sys.exit(1)
+    except json.JSONEncodeError as e:
+        logger.error(f"JSON encoding error: {e}")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        if args.debug:
+            logger.exception("Full traceback:")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
