@@ -6,27 +6,27 @@ This module provides comprehensive unit tests for all functions in git_grep_pars
 including individual parsing functions and the main parse_git_grep_output function.
 """
 
-import unittest
 import json
-import tempfile
 import os
 import sys
-from unittest.mock import patch, mock_open
+import tempfile
+import unittest
+from unittest.mock import mock_open, patch
 
 # Add the parent directory to the path so we can import git_grep_parser
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from code_snippet import CodeSnippet, CodeSnippetList
 from git_grep_parser import (
+    LineType,
+    is_context_line,
     is_separator_line,
     parse_context_line,
-    parse_matched_line,
-    is_context_line,
-    LineType,
     parse_git_grep_line,
     parse_git_grep_output,
+    parse_matched_line,
     setup_logging
 )
-from code_snippet import CodeSnippet, CodeSnippetList
 
 
 class TestGitGrepParser(unittest.TestCase):

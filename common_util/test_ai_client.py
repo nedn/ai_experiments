@@ -5,16 +5,16 @@ Test script for simplified AI Client functionality.
 This script tests the simplified AIClient class without requiring actual API calls.
 """
 
-import unittest
 import sys
+import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Add the current directory to Python path
 sys.path.append(str(Path(__file__).parent))
 
 try:
-    from .ai_client import AIClient
+    from common_util.ai_client import AIClient
 except ImportError:
     from ai_client import AIClient
 

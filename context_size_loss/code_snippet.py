@@ -23,8 +23,8 @@ After freezing:
 """
 
 import json
-from typing import List, Dict, Any, Optional, Union, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 @dataclass

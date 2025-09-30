@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 
 try:
-    from .ai_client import AIClient
+    from common_util.ai_client import AIClient
 except ImportError:
     from ai_client import AIClient
 

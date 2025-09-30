@@ -7,13 +7,14 @@ code snippets. It handles the specific format of git grep output with context li
 and matched lines.
 """
 
-import re
-import json
-import sys
 import argparse
+import json
 import logging
-from typing import List, Dict, Any, Tuple, Optional
+import re
+import sys
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 from code_snippet import CodeSnippet, CodeSnippetList
 
 

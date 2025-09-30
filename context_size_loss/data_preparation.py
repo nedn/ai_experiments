@@ -21,17 +21,18 @@ Author: AI Assistant
 Date: 2025
 """
 
-import os
 import json
-import subprocess
-import shutil
-import sys
-import re
-from pathlib import Path
-from typing import List, Dict, Any
 import logging
-from git_grep_parser import parse_git_grep_output
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any, Dict, List
+
 from code_snippet import CodeSnippet, CodeSnippetList
+from git_grep_parser import parse_git_grep_output
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

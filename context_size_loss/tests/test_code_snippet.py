@@ -6,10 +6,10 @@ This module provides comprehensive unit tests for CodeSnippet immutability
 functionality and CodeSnippetList functionality.
 """
 
-import unittest
 import json
 import os
 import sys
+import unittest
 
 # Add the parent directory to the path so we can import code_snippet
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

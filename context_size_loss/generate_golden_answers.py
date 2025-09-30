@@ -23,9 +23,9 @@ import json
 import logging
 import os
 import sys
-from pathlib import Path
-from typing import List, Dict, Any
 import time
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Add the current directory to Python path for imports
 sys.path.append(str(Path(__file__).parent))
@@ -34,7 +34,7 @@ sys.path.append(str(Path(__file__).parent.parent / "common_util"))
 
 from code_snippet import CodeSnippet, CodeSnippetList, snippets_from_json_list
 from validator import GoldenAnswerManager, generate_golden_answers
-from ai_client import AIClient, get_api_key
+from common_util.ai_client import AIClient, get_api_key
 
 # Configure logging
 logging.basicConfig(

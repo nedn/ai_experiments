@@ -16,7 +16,7 @@ from pathlib import Path
 # Add current directory to path for imports
 sys.path.append(str(Path(__file__).parent))
 
-from validator import ExperimentValidator, validate_with_edit_distance, ValidationResult
+from validator import ExperimentValidator, ValidationResult, validate_with_edit_distance
 
 
 def test_edit_distance_validation():
