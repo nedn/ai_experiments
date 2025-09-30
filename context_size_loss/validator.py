@@ -170,7 +170,7 @@ class GoldenAnswerManager:
         self.golden_answers_file = Path(golden_answers_file)
         self.golden_answers = self.load_golden_answers()
     
-    def load_golden_answers(self) -> Dict[str, str]:
+    def load_golden_answers(self) -> Dict[str, Dict[str, List[str]]]:
         """Load golden answers from file."""
         if not self.golden_answers_file.exists():
             logger.info(f"Golden answers file {self.golden_answers_file} does not exist, starting with empty dict")
@@ -185,7 +185,7 @@ class GoldenAnswerManager:
             logger.error(f"Error loading golden answers: {e}")
             return {}
     
-    def save_golden_answers(self, golden_answers: Optional[Dict[str, str]] = None):
+    def save_golden_answers(self, golden_answers: Optional[Dict[str, Dict[str, List[str]]]] = None):
         """Save golden answers to file."""
         if golden_answers is None:
             golden_answers = self.golden_answers
@@ -205,12 +205,35 @@ class GoldenAnswerManager:
         return snippet_id in self.golden_answers
     
     def get_golden_answer(self, snippet_id: str) -> Optional[str]:
-        """Get golden answer for a snippet."""
-        return self.golden_answers.get(snippet_id)
+        """Get golden answer for a snippet as a single string."""
+        if snippet_id not in self.golden_answers:
+            return None
+        
+        snippet_data = self.golden_answers[snippet_id]
+        if 'golden_answer' in snippet_data:
+            return '\n'.join(snippet_data['golden_answer'])
+        return None
     
-    def add_golden_answer(self, snippet_id: str, golden_code: str):
-        """Add a golden answer for a snippet."""
-        self.golden_answers[snippet_id] = golden_code
+    def get_original_content(self, snippet_id: str) -> Optional[str]:
+        """Get original content for a snippet as a single string."""
+        if snippet_id not in self.golden_answers:
+            return None
+        
+        snippet_data = self.golden_answers[snippet_id]
+        if 'original_content' in snippet_data:
+            return '\n'.join(snippet_data['original_content'])
+        return None
+    
+    def add_golden_answer(self, snippet_id: str, original_content: str, golden_code: str):
+        """Add a golden answer for a snippet with both original and converted content."""
+        # Convert strings to lists of lines
+        original_lines = original_content.split('\n')
+        golden_lines = golden_code.split('\n')
+        
+        self.golden_answers[snippet_id] = {
+            'original_content': original_lines,
+            'golden_answer': golden_lines
+        }
         logger.debug(f"Added golden answer for snippet {snippet_id}")
     
     def get_missing_snippets(self, snippet_ids: List[str]) -> List[str]:
@@ -311,7 +334,7 @@ Errors: {metrics['error_count']}
 
 
 def generate_golden_answers(snippets: List, api_key: str, 
-                          golden_answers_file: str = "golden_answers.json") -> Dict[str, str]:
+                          golden_answers_file: str = "golden_answers.json") -> Dict[str, Dict[str, List[str]]]:
     """
     Generate golden answers using gemini-2.5-pro with batch size 1.
     
@@ -324,7 +347,7 @@ def generate_golden_answers(snippets: List, api_key: str,
         golden_answers_file: File to save golden answers
         
     Returns:
-        Dictionary mapping snippet ID to golden converted code
+        Dictionary mapping snippet ID to golden answer data with original and converted content
     """
     logger.info(f"Generating golden answers for {len(snippets)} snippets...")
     
@@ -339,8 +362,16 @@ def generate_golden_answers(snippets: List, api_key: str,
     # In practice, replace this with actual API calls
     for i, snippet in enumerate(snippets):
         snippet_id = getattr(snippet, 'id', f"snippet_{i}")
+        # Get original content
+        original_content = getattr(snippet, 'content', '') or getattr(snippet, 'get_full_content', lambda: '')()
         # Placeholder golden answer - replace with actual API call
-        golden_answers[snippet_id] = f"// Golden answer for {snippet_id} - TODO: Generate with Gemini API"
+        golden_code = f"// Golden answer for {snippet_id} - TODO: Generate with Gemini API"
+        
+        # Convert to line-based format
+        golden_answers[snippet_id] = {
+            'original_content': original_content.split('\n'),
+            'golden_answer': golden_code.split('\n')
+        }
     
     # Save golden answers
     manager = GoldenAnswerManager(golden_answers_file)
