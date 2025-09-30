@@ -17,15 +17,15 @@ Date: 2025
 import json
 import logging
 import time
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+import dataclasses
+import pathlib
+import typing
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclasses.dataclass
 class ValidationResult:
     """Simple validation result for a single conversion."""
     
@@ -41,8 +41,8 @@ class ValidationResult:
     validation_time_ms: float
     
     # Optional details
-    error_message: Optional[str] = None
-    suggestions: Optional[List[str]] = None
+    error_message: typing.Optional[str] = None
+    suggestions: typing.Optional[typing.List[str]] = None
     
     @classmethod
     def create_no_golden_answer_error(cls) -> 'ValidationResult':
@@ -167,10 +167,10 @@ class GoldenAnswerManager:
     """Manages golden answers for validation."""
     
     def __init__(self, golden_answers_file: str):
-        self.golden_answers_file = Path(golden_answers_file)
+        self.golden_answers_file = pathlib.Path(golden_answers_file)
         self.golden_answers = self.load_golden_answers()
     
-    def load_golden_answers(self) -> Dict[str, Dict[str, List[str]]]:
+    def load_golden_answers(self) -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
         """Load golden answers from file."""
         if not self.golden_answers_file.exists():
             logger.info(f"Golden answers file {self.golden_answers_file} does not exist, starting with empty dict")
@@ -185,7 +185,7 @@ class GoldenAnswerManager:
             logger.error(f"Error loading golden answers: {e}")
             return {}
     
-    def save_golden_answers(self, golden_answers: Optional[Dict[str, Dict[str, List[str]]]] = None):
+    def save_golden_answers(self, golden_answers: typing.Optional[typing.Dict[str, typing.Dict[str, typing.List[str]]]] = None):
         """Save golden answers to file."""
         if golden_answers is None:
             golden_answers = self.golden_answers
@@ -204,7 +204,7 @@ class GoldenAnswerManager:
         """Check if golden answer exists for a snippet."""
         return snippet_id in self.golden_answers
     
-    def get_golden_answer(self, snippet_id: str) -> Optional[str]:
+    def get_golden_answer(self, snippet_id: str) -> typing.Optional[str]:
         """Get golden answer for a snippet as a single string."""
         if snippet_id not in self.golden_answers:
             return None
@@ -214,7 +214,7 @@ class GoldenAnswerManager:
             return '\n'.join(snippet_data['golden_answer'])
         return None
     
-    def get_original_content(self, snippet_id: str) -> Optional[str]:
+    def get_original_content(self, snippet_id: str) -> typing.Optional[str]:
         """Get original content for a snippet as a single string."""
         if snippet_id not in self.golden_answers:
             return None
@@ -236,7 +236,7 @@ class GoldenAnswerManager:
         }
         logger.debug(f"Added golden answer for snippet {snippet_id}")
     
-    def get_missing_snippets(self, snippet_ids: List[str]) -> List[str]:
+    def get_missing_snippets(self, snippet_ids: typing.List[str]) -> typing.List[str]:
         """Get list of snippet IDs that don't have golden answers."""
         return [snippet_id for snippet_id in snippet_ids 
                 if not self.has_golden_answer(snippet_id)]
@@ -263,8 +263,8 @@ class ExperimentValidator:
             self.similarity_threshold
         )
     
-    def validate_batch(self, snippet_ids: List[str], 
-                      generated_codes: List[str]) -> List[ValidationResult]:
+    def validate_batch(self, snippet_ids: typing.List[str], 
+                      generated_codes: typing.List[str]) -> typing.List[ValidationResult]:
         """Validate a batch of generated codes against golden answers."""
         
         if len(snippet_ids) != len(generated_codes):
@@ -278,7 +278,7 @@ class ExperimentValidator:
         logger.info(f"Validated {len(results)} conversions")
         return results
     
-    def calculate_batch_metrics(self, results: List[ValidationResult]) -> Dict[str, float]:
+    def calculate_batch_metrics(self, results: typing.List[ValidationResult]) -> typing.Dict[str, float]:
         """Calculate metrics for a batch of validation results."""
         
         if not results:
@@ -313,7 +313,7 @@ class ExperimentValidator:
         
         return metrics
     
-    def get_validation_summary(self, results: List[ValidationResult]) -> str:
+    def get_validation_summary(self, results: typing.List[ValidationResult]) -> str:
         """Get a human-readable summary of validation results."""
         
         metrics = self.calculate_batch_metrics(results)
@@ -333,8 +333,8 @@ Errors: {metrics['error_count']}
         return summary.strip()
 
 
-def generate_golden_answers(snippets: List, api_key: str, 
-                          golden_answers_file: str = "golden_answers.json") -> Dict[str, Dict[str, List[str]]]:
+def generate_golden_answers(snippets: typing.List, api_key: str, 
+                          golden_answers_file: str = "golden_answers.json") -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     """
     Generate golden answers using gemini-2.5-pro with batch size 1.
     

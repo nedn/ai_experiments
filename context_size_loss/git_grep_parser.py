@@ -12,8 +12,8 @@ import json
 import logging
 import re
 import sys
-from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+import enum
+import typing
 
 from code_snippet import CodeSnippet, CodeSnippetList
 
@@ -31,7 +31,7 @@ def is_separator_line(line: str) -> bool:
     return line.strip() == '--'
 
 
-def parse_context_line(line: str) -> Tuple[bool, Optional[str], Optional[int], Optional[str]]:
+def parse_context_line(line: str) -> typing.Tuple[bool, typing.Optional[str], typing.Optional[int], typing.Optional[str]]:
     """
     Parse a context line from git grep output.
     
@@ -53,7 +53,7 @@ def parse_context_line(line: str) -> Tuple[bool, Optional[str], Optional[int], O
     return False, None, None, None
 
 
-def parse_matched_line(line: str) -> Tuple[bool, Optional[str], Optional[int], Optional[str]]:
+def parse_matched_line(line: str) -> typing.Tuple[bool, typing.Optional[str], typing.Optional[int], typing.Optional[str]]:
     """
     Parse a matched line from git grep output.
     
@@ -88,12 +88,12 @@ def is_context_line(line: str) -> bool:
     pattern = r'^[^:]+-\d+-'
     return bool(re.match(pattern, line))
 
-class LineType(Enum):
+class LineType(enum.Enum):
     SEPARATOR = "separator"
     CONTEXT = "context"
     MATCHED = "matched" 
 
-def parse_git_grep_line(line: str) -> Tuple[LineType, Optional[str], Optional[int], Optional[str]]:
+def parse_git_grep_line(line: str) -> typing.Tuple[LineType, typing.Optional[str], typing.Optional[int], typing.Optional[str]]:
     """
     Parse a line from git grep output.
     

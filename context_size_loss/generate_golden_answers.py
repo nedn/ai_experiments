@@ -24,13 +24,13 @@ import logging
 import os
 import sys
 import time
-from pathlib import Path
-from typing import Any, Dict, List
+import pathlib
+import typing
 
 # Add the current directory to Python path for imports
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(pathlib.Path(__file__).parent))
 # Add the common_util directory to Python path for imports
-sys.path.append(str(Path(__file__).parent.parent / "common_util"))
+sys.path.append(str(pathlib.Path(__file__).parent.parent / "common_util"))
 
 from code_snippet import CodeSnippet, CodeSnippetList, snippets_from_json_list
 from validator import GoldenAnswerManager, generate_golden_answers
@@ -84,8 +84,8 @@ def load_snippets_raw_data(snippets_file: str) -> List[Dict[str, Any]]:
         raise
 
 
-def sanity_check_original_content(golden_answers: Dict[str, Dict[str, List[str]]], 
-                                 raw_snippets_data: List[Dict[str, Any]]) -> bool:
+def sanity_check_original_content(golden_answers: typing.Dict[str, typing.Dict[str, typing.List[str]]], 
+                                 raw_snippets_data: typing.List[typing.Dict[str, typing.Any]]) -> bool:
     """
     Sanity check to compare original_content in golden answers with raw_content from snippets.
     
@@ -214,7 +214,7 @@ Converted code:
 
 def generate_golden_answers_for_snippets(snippets: CodeSnippetList, api_key: str, 
                                        model: str = "gemini-2.5-pro",
-                                       output_file: str = "golden_answers.json") -> Dict[str, Dict[str, List[str]]]:
+                                       output_file: str = "golden_answers.json") -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     """
     Generate golden answers for all snippets using the specified Gemini model.
     

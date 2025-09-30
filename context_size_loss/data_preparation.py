@@ -28,8 +28,8 @@ import re
 import shutil
 import subprocess
 import sys
-from pathlib import Path
-from typing import Any, Dict, List
+import pathlib
+import typing
 
 from code_snippet import CodeSnippet, CodeSnippetList
 from git_grep_parser import parse_git_grep_output
@@ -49,7 +49,7 @@ class RISEDataPreparation:
         Args:
             output_dir: Directory to store extracted data and cloned repository
         """
-        self.output_dir = Path(output_dir)
+        self.output_dir = pathlib.Path(output_dir)
         self.rise_repo_dir = self.output_dir / "RISE"
         self.target_commit = "297d0339a7f7acd1418e322a30a21f44c7dbbb1d"
         self.repo_url = "https://github.com/aravindkrishnaswamy/RISE"
@@ -222,7 +222,7 @@ class RISEDataPreparation:
         logger.info(f"Generated summary report: {report_file}")
         return str(report_file)
         
-    def run_full_pipeline(self) -> Dict[str, str]:
+    def run_full_pipeline(self) -> typing.Dict[str, str]:
         """
         Execute the complete data preparation pipeline.
         

@@ -20,8 +20,8 @@ Usage:
 
 import os
 import sys
-from pathlib import Path
-from typing import Optional
+import pathlib
+import typing
 
 try:
     import google.generativeai as genai
@@ -31,12 +31,12 @@ except ImportError:
     sys.exit(1)
 
 
-def _load_from_env_file() -> Optional[str]:
+def _load_from_env_file() -> typing.Optional[str]:
     """Load API key from .env file."""
     env_files = ['.env', '.env.local', '.env.production']
     
     for env_file in env_files:
-        env_path = Path(env_file)
+        env_path = pathlib.Path(env_file)
         if env_path.exists():
             try:
                 with open(env_path, 'r') as f:
@@ -87,7 +87,7 @@ class AIClient:
     
     ALLOWED_MODELS = ["gemini-2.5-pro", "gemini-flash-latest", "gemini-flash-lite-latest"]
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "gemini-2.5-pro"):
+    def __init__(self, api_key: typing.Optional[str] = None, model: str = "gemini-2.5-pro"):
         """
         Initialize the AI Client.
         

@@ -8,8 +8,8 @@ as well as immutability support through the freeze() method.
 
 The CodeSnippet class encapsulates:
 - file_path: The path to the file containing the snippet
-- matched_lines: List of line numbers that matched the search pattern
-- context_lines: List of context line numbers surrounding the matched lines
+- matched_lines: typing.List of line numbers that matched the search pattern
+- context_lines: typing.List of context line numbers surrounding the matched lines
 - raw_surrounding_git_grep_lines: Raw git grep output lines for this snippet
 - raw_content: The actual content of the lines (without file/line number prefixes)
 
@@ -23,11 +23,11 @@ After freezing:
 """
 
 import json
-from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+import dataclasses
+import typing
 
 
-@dataclass
+@dataclasses.dataclass
 class CodeSnippet:
     """
     Represents a code snippet extracted from git grep output.
@@ -40,10 +40,10 @@ class CodeSnippet:
     """
     
     file_path: str
-    matched_lines: Union[List[int], Tuple[int, ...]]
-    context_lines: Union[List[int], Tuple[int, ...]]
-    raw_surrounding_git_grep_lines: Union[List[str], Tuple[str, ...]]
-    raw_content: Union[List[str], Tuple[str, ...]]
+    matched_lines: typing.Union[typing.List[int], typing.Tuple[int, ...]]
+    context_lines: typing.Union[typing.List[int], typing.Tuple[int, ...]]
+    raw_surrounding_git_grep_lines: typing.Union[typing.List[str], typing.Tuple[str, ...]]
+    raw_content: typing.Union[typing.List[str], typing.Tuple[str, ...]]
     _frozen: bool = False
     
     def __post_init__(self):
@@ -63,7 +63,7 @@ class CodeSnippet:
         if not isinstance(self.raw_content, (list, tuple)):
             raise ValueError("raw_content must be a list or tuple")
     
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: typing.Any) -> None:
         """Override setattr to prevent modification of frozen objects."""
         if hasattr(self, '_frozen') and self._frozen and name != '_frozen':
             raise ValueError(f"Cannot modify frozen CodeSnippet object. Attempted to set '{name}'")
@@ -76,7 +76,7 @@ class CodeSnippet:
         After calling this method:
         - No fields can be modified
         - All list fields are converted to tuples for additional immutability
-        - Any attempt to modify the object will raise a ValueError
+        - typing.Any attempt to modify the object will raise a ValueError
         
         This method can only be called once. Subsequent calls are ignored.
         """
@@ -102,12 +102,12 @@ class CodeSnippet:
         return self._frozen
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'CodeSnippet':
+    def from_dict(cls, data: typing.Dict[str, typing.Any]) -> 'CodeSnippet':
         """
         Create a CodeSnippet instance from a dictionary.
         
         Args:
-            data: Dictionary containing snippet data
+            data: typing.Dictionary containing snippet data
             
         Returns:
             CodeSnippet instance
@@ -151,16 +151,16 @@ class CodeSnippet:
         except json.JSONDecodeError as e:
             raise json.JSONDecodeError(f"Invalid JSON: {e.msg}", e.doc, e.pos)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> typing.Dict[str, typing.Any]:
         """
         Convert the CodeSnippet to a dictionary.
         
         Returns:
-            Dictionary representation of the snippet
+            typing.Dictionary representation of the snippet
         """
-        return asdict(self)
+        return dataclasses.asdict(self)
     
-    def to_json(self, indent: Optional[int] = None) -> str:
+    def to_json(self, indent: typing.Optional[int] = None) -> str:
         """
         Convert the CodeSnippet to a JSON string.
         
@@ -231,15 +231,15 @@ class CodeSnippet:
                 f"total_lines={self.get_total_lines()})")
 
 
-def snippets_from_json_list(json_data: List[Dict[str, Any]]) -> List[CodeSnippet]:
+def snippets_from_json_list(json_data: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[CodeSnippet]:
     """
     Create a list of CodeSnippet instances from a list of dictionaries.
     
     Args:
-        json_data: List of dictionaries containing snippet data
+        json_data: typing.List of dictionaries containing snippet data
         
     Returns:
-        List of CodeSnippet instances
+        typing.List of CodeSnippet instances
     """
     return [CodeSnippet.from_dict(snippet_data) for snippet_data in json_data]
 
@@ -250,15 +250,15 @@ class CodeSnippetList:
     
     This class provides a thread-safe, immutable container for CodeSnippet objects.
     All CodeSnippet objects in the list are automatically frozen (immutable).
-    The CodeSnippetList itself is also immutable after initialization.
+    The CodeSnippettyping.List itself is also immutable after initialization.
     """
     
-    def __init__(self, snippets: List[CodeSnippet]):
+    def __init__(self, snippets: typing.List[CodeSnippet]):
         """
-        Initialize CodeSnippetList with a list of CodeSnippet objects.
+        Initialize CodeSnippettyping.List with a list of CodeSnippet objects.
         
         Args:
-            snippets: List of CodeSnippet objects (will be frozen automatically)
+            snippets: typing.List of CodeSnippet objects (will be frozen automatically)
             
         Raises:
             ValueError: If any snippet is not frozen or if snippets is not a list
@@ -295,21 +295,21 @@ class CodeSnippetList:
         """Check if a snippet is in the list."""
         return snippet in self._snippets
     
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: typing.Any) -> None:
         """Override setattr to prevent modification of frozen objects."""
         if hasattr(self, '_frozen') and self._frozen and name != '_frozen':
-            raise ValueError(f"Cannot modify frozen CodeSnippetList object. Attempted to set '{name}'")
+            raise ValueError(f"Cannot modify frozen CodeSnippettyping.List object. Attempted to set '{name}'")
         super().__setattr__(name, value)
     
     def __delattr__(self, name: str) -> None:
         """Override delattr to prevent deletion of attributes."""
         if hasattr(self, '_frozen') and self._frozen:
-            raise ValueError(f"Cannot delete attributes from frozen CodeSnippetList object. Attempted to delete '{name}'")
+            raise ValueError(f"Cannot delete attributes from frozen CodeSnippettyping.List object. Attempted to delete '{name}'")
         super().__delattr__(name)
     
     def is_frozen(self) -> bool:
         """
-        Check if this CodeSnippetList object is frozen (immutable).
+        Check if this CodeSnippettyping.List object is frozen (immutable).
         
         Returns:
             True if the object is frozen, False otherwise
@@ -352,12 +352,12 @@ class CodeSnippetList:
         """
         return sum(snippet.get_context_line_count() for snippet in self._snippets)
     
-    def get_snippets_by_file(self) -> Dict[str, List[CodeSnippet]]:
+    def get_snippets_by_file(self) -> typing.Dict[str, typing.List[CodeSnippet]]:
         """
         Group snippets by file path.
         
         Returns:
-            Dictionary mapping file paths to lists of snippets
+            typing.Dictionary mapping file paths to lists of snippets
         """
         file_groups = {}
         for snippet in self._snippets:
@@ -378,15 +378,15 @@ class CodeSnippetList:
         return len(unique_files)
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'CodeSnippetList':
+    def from_dict(cls, data: typing.Dict[str, typing.Any]) -> 'CodeSnippettyping.List':
         """
-        Create a CodeSnippetList instance from a dictionary.
+        Create a CodeSnippettyping.List instance from a dictionary.
         
         Args:
-            data: Dictionary containing snippets data
+            data: typing.Dictionary containing snippets data
             
         Returns:
-            CodeSnippetList instance
+            CodeSnippettyping.List instance
             
         Raises:
             ValueError: If required fields are missing or invalid
@@ -402,15 +402,15 @@ class CodeSnippetList:
         return cls(snippets)
     
     @classmethod
-    def from_json(cls, json_str: str) -> 'CodeSnippetList':
+    def from_json(cls, json_str: str) -> 'CodeSnippettyping.List':
         """
-        Create a CodeSnippetList instance from a JSON string.
+        Create a CodeSnippettyping.List instance from a JSON string.
         
         Args:
             json_str: JSON string containing snippets data
             
         Returns:
-            CodeSnippetList instance
+            CodeSnippettyping.List instance
             
         Raises:
             ValueError: If JSON is invalid or required fields are missing
@@ -422,20 +422,20 @@ class CodeSnippetList:
         except json.JSONDecodeError as e:
             raise json.JSONDecodeError(f"Invalid JSON: {e.msg}", e.doc, e.pos)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> typing.Dict[str, typing.Any]:
         """
-        Convert the CodeSnippetList to a dictionary.
+        Convert the CodeSnippettyping.List to a dictionary.
         
         Returns:
-            Dictionary representation of the snippets list
+            typing.Dictionary representation of the snippets list
         """
         return {
             "snippets": [snippet.to_dict() for snippet in self._snippets]
         }
     
-    def to_json(self, indent: Optional[int] = None) -> str:
+    def to_json(self, indent: typing.Optional[int] = None) -> str:
         """
-        Convert the CodeSnippetList to a JSON string.
+        Convert the CodeSnippettyping.List to a JSON string.
         
         Args:
             indent: Number of spaces for JSON indentation (None for compact)
@@ -454,12 +454,12 @@ class CodeSnippetList:
         return f"CodeSnippetList({len(self._snippets)} snippets, {self.get_file_count()} files)"
 
 
-def snippets_to_json_list(snippets: List[CodeSnippet], indent: Optional[int] = None) -> str:
+def snippets_to_json_list(snippets: typing.List[CodeSnippet], indent: typing.Optional[int] = None) -> str:
     """
     Convert a list of CodeSnippet instances to a JSON string.
     
     Args:
-        snippets: List of CodeSnippet instances
+        snippets: typing.List of CodeSnippet instances
         indent: Number of spaces for JSON indentation (None for compact)
         
     Returns:

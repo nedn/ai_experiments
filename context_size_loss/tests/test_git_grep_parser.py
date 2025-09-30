@@ -11,7 +11,7 @@ import os
 import sys
 import tempfile
 import unittest
-from unittest.mock import mock_open, patch
+import unittest.mock
 
 # Add the parent directory to the path so we can import git_grep_parser
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -446,8 +446,8 @@ file.c-3-  return 0;
             # Create a mock stdin object
             mock_stdin = type('MockStdin', (), {'read': lambda self: test_input})()
             
-            with patch('sys.stdin', mock_stdin):
-                with patch('sys.argv', ['git_grep_parser.py', '--output', tmp_path]):
+            with unittest.mock.patch('sys.stdin', mock_stdin):
+                with unittest.mock.patch('sys.argv', ['git_grep_parser.py', '--output', tmp_path]):
                     from git_grep_parser import main
                     main()
             
@@ -481,7 +481,7 @@ file.c-3-  return 0;
             output_path = output_file.name
         
         try:
-            with patch('sys.argv', ['git_grep_parser.py', '--input', input_path, '--output', output_path]):
+            with unittest.mock.patch('sys.argv', ['git_grep_parser.py', '--input', input_path, '--output', output_path]):
                 from git_grep_parser import main
                 main()
             

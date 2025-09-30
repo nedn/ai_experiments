@@ -6,10 +6,10 @@ This script demonstrates how to use the AIClient class for various tasks.
 """
 
 import sys
-from pathlib import Path
+import pathlib
 
 # Add the current directory to Python path
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(pathlib.Path(__file__).parent))
 
 try:
     from common_util.ai_client import AIClient

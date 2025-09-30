@@ -30,13 +30,13 @@ import sys
 import tempfile
 import time
 import unittest
-from dataclasses import asdict, dataclass
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+import dataclasses
+import datetime
+import pathlib
+import typing
 
 
-@dataclass
+@dataclasses.dataclass
 class TestResult:
     """Structured representation of a test result."""
     test_name: str
@@ -45,12 +45,12 @@ class TestResult:
     test_method: str
     status: str  # 'passed', 'failed', 'error', 'skipped'
     duration: float
-    error_message: Optional[str] = None
-    error_traceback: Optional[str] = None
-    line_number: Optional[int] = None
+    error_message: typing.Optional[str] = None
+    error_traceback: typing.Optional[str] = None
+    line_number: typing.Optional[int] = None
 
 
-@dataclass
+@dataclasses.dataclass
 class TestSuiteResult:
     """Structured representation of a test suite result."""
     total_tests: int
@@ -59,7 +59,7 @@ class TestSuiteResult:
     errors: int
     skipped: int
     duration: float
-    test_results: List[TestResult]
+    test_results: typing.List[TestResult]
     timestamp: str
     python_version: str
     platform: str
@@ -69,11 +69,11 @@ class AITestRunner:
     """Test runner optimized for AI agent usage."""
     
     def __init__(self, project_root: str = None):
-        self.project_root = Path(project_root) if project_root else Path.cwd()
+        self.project_root = pathlib.Path(project_root) if project_root else pathlib.Path.cwd()
         self.test_results_file = self.project_root / ".test_results.json"
         self.failed_tests_file = self.project_root / ".failed_tests.json"
         
-    def discover_tests(self, pattern: str = "test_*.py") -> List[str]:
+    def discover_tests(self, pattern: str = "test_*.py") -> typing.List[str]:
         """Discover all test files in the project."""
         test_files = []
         
@@ -90,7 +90,7 @@ class AITestRunner:
         return sorted(test_files)
     
     def run_tests(self, 
-                  test_files: Optional[List[str]] = None,
+                  test_files: typing.Optional[typing.List[str]] = None,
                   focus_failures: bool = False,
                   verbose: bool = False,
                   json_output: bool = False) -> TestSuiteResult:
@@ -105,7 +105,7 @@ class AITestRunner:
                 print("No previously failed tests found.")
                 return TestSuiteResult(
                     total_tests=0, passed=0, failed=0, errors=0, skipped=0,
-                    duration=0.0, test_results=[], timestamp=datetime.now().isoformat(),
+                    duration=0.0, test_results=[], timestamp=datetime.datetime.now().isoformat(),
                     python_version=sys.version, platform=sys.platform
                 )
         
@@ -162,7 +162,7 @@ class AITestRunner:
             skipped=len(getattr(test_result, 'skipped', [])),
             duration=duration,
             test_results=test_results,
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.datetime.now().isoformat(),
             python_version=sys.version,
             platform=sys.platform
         )
@@ -172,7 +172,7 @@ class AITestRunner:
         
         return suite_result
     
-    def _get_failed_tests(self) -> List[str]:
+    def _get_failed_tests(self) -> typing.List[str]:
         """Get list of previously failed test files."""
         if not self.failed_tests_file.exists():
             return []
@@ -188,7 +188,7 @@ class AITestRunner:
         """Save test results for future reference."""
         # Save full results
         with open(self.test_results_file, 'w') as f:
-            json.dump(asdict(suite_result), f, indent=2)
+            json.dump(dataclasses.asdict(suite_result), f, indent=2)
         
         # Save failed test files for focus mode
         failed_files = set()
@@ -248,7 +248,7 @@ class AITestRunner:
     
     def print_json_summary(self, suite_result: TestSuiteResult):
         """Print test results in JSON format for AI processing."""
-        print(json.dumps(asdict(suite_result), indent=2))
+        print(json.dumps(dataclasses.asdict(suite_result), indent=2))
 
 
 class AITestResult(unittest.TestResult):
@@ -336,7 +336,7 @@ class AITestResultCollector:
         """Flush output."""
         pass
     
-    def get_test_results(self) -> List[TestResult]:
+    def get_test_results(self) -> typing.List[TestResult]:
         """Get collected test results."""
         return self.test_results
 

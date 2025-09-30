@@ -11,10 +11,10 @@ Date: 2025
 
 import json
 import sys
-from pathlib import Path
+import pathlib
 
 # Add current directory to path for imports
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(pathlib.Path(__file__).parent))
 
 from validator import ExperimentValidator, ValidationResult, validate_with_edit_distance
 
@@ -95,7 +95,7 @@ def test_golden_answer_manager():
     print(f"  Correct conversions: {metrics['correct_conversions']}/{metrics['total_conversions']}")
     
     # Clean up test file
-    Path(test_file).unlink()
+    pathlib.Path(test_file).unlink()
     print()
 
 
@@ -104,7 +104,7 @@ def test_with_real_snippets():
     print("Testing with real snippets...")
     
     snippets_file = "rise_data/sprintf_snippets.json"
-    if not Path(snippets_file).exists():
+    if not pathlib.Path(snippets_file).exists():
         print(f"Snippets file {snippets_file} not found, skipping real data test")
         return
     
@@ -150,7 +150,7 @@ def test_with_real_snippets():
             print(f"  {snippet_id}: {result.is_correct} (similarity: {result.similarity_score:.3f})")
         
         # Clean up
-        Path(test_file).unlink()
+        pathlib.Path(test_file).unlink()
         
     except Exception as e:
         print(f"Error testing with real snippets: {e}")
