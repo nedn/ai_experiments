@@ -24,15 +24,15 @@ Date: 2025
 import json
 import logging
 import os
+import pathlib
 import re
 import shutil
 import subprocess
 import sys
-import pathlib
 import typing
 
-from code_snippet import CodeSnippet, CodeSnippetList
-from git_grep_parser import parse_git_grep_output
+from context_size_loss.code_snippet import CodeSnippet, CodeSnippetList
+from context_size_loss.git_grep_parser import parse_git_grep_output
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

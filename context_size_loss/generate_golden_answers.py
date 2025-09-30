@@ -32,9 +32,9 @@ sys.path.append(str(pathlib.Path(__file__).parent))
 # Add the common_util directory to Python path for imports
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "common_util"))
 
-from code_snippet import CodeSnippet, CodeSnippetList, snippets_from_json_list
-from validator import GoldenAnswerManager, generate_golden_answers
-from common_util.ai_client import AIClient, get_api_key
+import code_snippet
+import validator
+import ai_client   
 
 # Configure logging
 logging.basicConfig(
@@ -44,7 +44,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def load_snippets(snippets_file: str) -> CodeSnippetList:
+def load_snippets(snippets_file: str) -> code_snippet.CodeSnippetList:
     """Load code snippets from JSON file."""
     logger.info(f"Loading snippets from {snippets_file}")
     
@@ -57,7 +57,7 @@ def load_snippets(snippets_file: str) -> CodeSnippetList:
         else:
             snippets_data = data
         
-        snippets = snippets_from_json_list(snippets_data)
+        snippets = code_snippet.snippets_from_json_list(snippets_data)
         logger.info(f"Loaded {len(snippets)} snippets")
         return snippets
         
@@ -66,7 +66,7 @@ def load_snippets(snippets_file: str) -> CodeSnippetList:
         raise
 
 
-def load_snippets_raw_data(snippets_file: str) -> List[Dict[str, Any]]:
+def load_snippets_raw_data(snippets_file: str) -> typing.List[typing.Dict[str, typing.Any]]:
     """Load raw snippets data from JSON file for sanity checking."""
     logger.debug(f"Loading raw snippets data from {snippets_file}")
     
@@ -156,13 +156,13 @@ def sanity_check_original_content(golden_answers: typing.Dict[str, typing.Dict[s
         return True
 
 
-def call_gemini_api(snippet_content: str, ai_client: AIClient) -> str:
+def call_gemini_api(snippet_content: str, client: ai_client.AIClient) -> str:
     """
     Call Gemini API to convert sprintf to snprintf using the AI client.
     
     Args:
         snippet_content: The code snippet to convert
-        ai_client: Configured AIClient instance
+        client: Configured AIClient instance
         
     Returns:
         Converted code snippet
@@ -179,10 +179,10 @@ Converted code:
 ```c
 """
     
-    logger.debug(f"Calling {ai_client.model_name} API with prompt length: {len(prompt)}")
+    logger.debug(f"Calling {client.model_name} API with prompt length: {len(prompt)}")
     
     try:
-        response = ai_client.generate_content(prompt)
+        response = client.generate_content(prompt)
         
         # Extract code from response if it's wrapped in markdown code blocks
         if "```c" in response:
@@ -212,7 +212,7 @@ Converted code:
         return f"// Error converting sprintf to snprintf: {e}\n{snippet_content}"
 
 
-def generate_golden_answers_for_snippets(snippets: CodeSnippetList, api_key: str, 
+def generate_golden_answers_for_snippets(snippets: code_snippet.CodeSnippetList, api_key: str, 
                                        model: str = "gemini-2.5-pro",
                                        output_file: str = "golden_answers.json") -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     """
@@ -231,14 +231,14 @@ def generate_golden_answers_for_snippets(snippets: CodeSnippetList, api_key: str
     
     # Initialize AI client
     try:
-        ai_client = AIClient(api_key=api_key, model=model)
+        client = ai_client.AIClient(api_key=api_key, model=model)
         logger.info(f"Initialized AI client with model: {model}")
     except Exception as e:
         logger.error(f"Failed to initialize AI client: {e}")
         raise
     
     golden_answers = {}
-    manager = GoldenAnswerManager(output_file)
+    manager = validator.GoldenAnswerManager(output_file)
     
     # Check which snippets already have golden answers
     existing_answers = set(manager.golden_answers.keys())
@@ -262,7 +262,7 @@ def generate_golden_answers_for_snippets(snippets: CodeSnippetList, api_key: str
             snippet_content = snippet.get_full_content()
             
             # Call Gemini API using the AI client
-            converted_code = call_gemini_api(snippet_content, ai_client)
+            converted_code = call_gemini_api(snippet_content, client)
             
             # Store golden answer with both original and converted content
             golden_answers[snippet_id] = {
@@ -317,13 +317,13 @@ def main():
     enable_sanity_check = args.sanity_check and not args.no_sanity_check
     
     # Get API key
-    api_key = args.api_key or get_api_key()
+    api_key = args.api_key or ai_client.get_api_key()
     if not api_key:
         logger.error("API key required. Set GEMINI_API_KEY env var or use --api-key")
         sys.exit(1)
     
     # Check if snippets file exists
-    if not Path(args.snippets_file).exists():
+    if not pathlib.Path(args.snippets_file).exists():
         logger.error(f"Snippets file not found: {args.snippets_file}")
         sys.exit(1)
     
