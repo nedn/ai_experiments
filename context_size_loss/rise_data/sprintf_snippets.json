@@ -2,8 +2,12 @@
   "metadata": {
     "repository": "https://github.com/aravindkrishnaswamy/RISE",
     "commit": "297d0339a7f7acd1418e322a30a21f44c7dbbb1d",
-    "extraction_date": "Tue Sep 30 10:17:37 MDT 2025",
+    "extraction_date": "Tue Sep 30 13:08:03 MDT 2025",
     "total_snippets": 66,
+    "total_files": 35,
+    "total_lines": 1119,
+    "total_matched_lines": 147,
+    "total_context_lines": 972,
     "description": "Code snippets containing sprintf calls from RISE repository"
   },
   "snippets": [
@@ -106,7 +110,8 @@
         "       ptime->second % 61);",
         "#endif",
         "#endif /* _WIN32_WCE */"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pnggccrd.c",
@@ -252,7 +257,8 @@
         "   png_debug2(0, \"row_number=%5ld, %5s, \", png_ptr->row_number, filnm);",
         "   png_debug1(0, \"row=0x%08lx, \", (unsigned long)row);",
         "   png_debug2(0, \"pixdepth=%2d, bytes=%d, \", (int)row_info->pixel_depth,"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngread.c",
@@ -308,7 +314,8 @@
         "#endif",
         "#ifdef PNG_ERROR_NUMBERS_SUPPORTED",
         "        png_ptr->flags=0;"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngread.c",
@@ -364,7 +371,8 @@
         "   }",
         "#endif",
         "   if(png_sizeof(png_struct) > png_struct_size)"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngrtran.c",
@@ -408,7 +416,8 @@
         "#else",
         "      png_error(png_ptr, \"NULL row buffer\");",
         "#endif"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngrutil.c",
@@ -470,7 +479,8 @@
         "#else",
         "         png_warning(png_ptr,",
         "            \"Incomplete compressed datastream in chunk other than IDAT\");"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngrutil.c",
@@ -514,7 +524,8 @@
         "      png_warning(png_ptr, \"Unknown zTXt compression type\");",
         "#endif",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngvcrd.c",
@@ -633,7 +644,8 @@
         "   png_debug2(0,\"row=%5d, %s, \", png_ptr->row_number, filnm);",
         "   png_debug2(0, \"pd=%2d, b=%d, \", (int)row_info->pixel_depth,",
         "      (int)((row_info->pixel_depth + 7) >> 3));"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngwrite.c",
@@ -689,7 +701,8 @@
         "#endif",
         "#ifdef PNG_ERROR_NUMBERS_SUPPORTED",
         "        png_ptr->flags=0;"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngwrite.c",
@@ -745,7 +758,8 @@
         "   }",
         "#endif",
         "   if(png_sizeof(png_struct) > png_struct_size)"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngwutil.c",
@@ -789,7 +803,8 @@
         "      png_warning(png_ptr, \"Unknown compression type\");",
         "#endif",
         "   }"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngwutil.c",
@@ -833,7 +848,8 @@
         "         png_warning(png_ptr, \"invalid character in keyword\");",
         "#endif",
         "         *dp = ' ';"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libpng/pngwutil.c",
@@ -907,7 +923,8 @@
         "",
         "   png_debug1(3, \"sCAL total length = %d\\n\", (int)total_len);",
         "   png_write_chunk_start(png_ptr, (png_bytep)png_sCAL, (png_uint_32)total_len);"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_dirinfo.c",
@@ -951,7 +968,8 @@
         "}",
         "",
         "/* vim: set ts=8 sts=8 sw=8 noet: */"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_getimage.c",
@@ -1019,7 +1037,8 @@
         "    }",
         "    colorchannels = td->td_samplesperpixel - td->td_extrasamples;",
         "    if (!TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photometric)) {"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_getimage.c",
@@ -1096,7 +1115,8 @@
         "                    photoTag, photometric,",
         "                    \"Samples/pixel\", td->td_samplesperpixel,",
         "                    td->td_bitspersample);"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_getimage.c",
@@ -1299,7 +1319,8 @@
         "    }",
         "    return (1);",
         "}"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_getimage.c",
@@ -1343,7 +1364,8 @@
         "    }",
         "    img->alpha = 0;",
         "    TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &img->samplesperpixel);"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_getimage.c",
@@ -1441,7 +1463,8 @@
         "",
         "        _TIFFmemcpy( img->redcmap, red_orig, n_color * 2 );",
         "        _TIFFmemcpy( img->greencmap, green_orig, n_color * 2 );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_getimage.c",
@@ -1518,7 +1541,8 @@
         "\t}",
         "\t/* It would probably be nice to have a reality check here. */",
         "\tif (planarconfig == PLANARCONFIG_CONTIG)"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_getimage.c",
@@ -1706,7 +1730,8 @@
         "    }",
         "    img->Map = NULL;",
         "    img->BWmap = NULL;"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_getimage.c",
@@ -1768,7 +1793,8 @@
         "    }",
         "    return 1;",
         "}"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_win3.c",
@@ -1812,7 +1838,8 @@
         "\t    MB_OK|MB_ICONEXCLAMATION);",
         "}",
         "TIFFErrorHandler _TIFFwarningHandler = win3WarningHandler;"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_win3.c",
@@ -1853,7 +1880,8 @@
         "\tMessageBox(GetActiveWindow(), e, \"LibTIFF Error\", MB_OK|MB_ICONSTOP);",
         "}",
         "TIFFErrorHandler _TIFFerrorHandler = win3ErrorHandler;"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_win32.c",
@@ -1903,7 +1931,8 @@
         "\treturn;",
         "#else",
         "\tif (module != NULL)"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/libtiff/tif_win32.c",
@@ -1953,7 +1982,8 @@
         "\treturn;",
         "#else",
         "\tif (module != NULL)"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/zlib/gzio.c",
@@ -1997,7 +2027,8 @@
         "}",
         "",
         "/* ==========================================================================="
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/zlib/gzio.c",
@@ -2059,7 +2090,8 @@
         "#else",
         "#  ifdef HAS_vsnprintf_void",
         "    (void)vsnprintf(buf, sizeof(buf), format, va);"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/zlib/gzio.c",
@@ -2121,7 +2153,8 @@
         "#else",
         "#  ifdef HAS_snprintf_void",
         "    snprintf(buf, sizeof(buf), format, a1, a2, a3, a4, a5, a6, a7, a8,"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/zlib/zlib.h",
@@ -2165,7 +2198,8 @@
         "     26: 0 = returns value, 1 = void -- 1 means inferred string length returned",
         "",
         "    Remainder:"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/zlib/zlib.h",
@@ -2209,7 +2243,8 @@
         "",
         "ZEXTERN int ZEXPORT gzputs OF((gzFile file, const char *s));",
         "/*"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/zlib/zutil.c",
@@ -2253,7 +2288,8 @@
         "#  else",
         "#    ifdef HAS_vsnprintf_void",
         "        flags += 1L << 26;"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "extlib/zlib/zutil.c",
@@ -2297,7 +2333,8 @@
         "#  else",
         "#    ifdef HAS_snprintf_void",
         "        flags += 1L << 26;"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/3DSMax/RISERenderImage.cpp",
@@ -2491,7 +2528,8 @@
         "\t\t\t\tpCamera->SetIntermediateValue( *p );",
         "\t\t\t\tp->release();",
         "\t\t\t}"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/3DSMax/RISERenderImage.cpp",
@@ -2535,7 +2573,8 @@
         "\t\t\tRISE::GlobalLog()->PrintNew( pGeometry, __FILE__, __LINE__, \"MAX geometry\" );",
         "\t\t\tpJob->GetGeometries()->AddItem( pGeometry, geomname );",
         "\t\t\tpGeometry->release();"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/3DSMax/RISERenderImage.cpp",
@@ -2579,7 +2618,8 @@
         "\t\t\t\t\t\t} else {",
         "\t\t\t\t\t\t\tpJob->AddLambertianMaterial( material_name, rd );",
         "\t\t\t\t\t\t}"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/3DSMax/RISERenderImage.cpp",
@@ -2623,7 +2663,8 @@
         "\t\t\t{",
         "\t\t\t\t// OMNI Light --------------",
         "\t\t\t\tdouble pos[3] = {p.x,p.y,p.z};"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/DRISE/AnimationTask.cpp",
@@ -2667,7 +2708,8 @@
         "\t\t\t\tfro->OutputImage( *pOutputImage, 0, 0 );",
         "\t\t\t\tfro->release();",
         "\t\t\t}"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/DRISE/AnimationTask.cpp",
@@ -2735,7 +2777,8 @@
         "\t\t\t\t\tstrcat( buf, daybuf );",
         "\t\t\t\t}",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/DRISE/Task.cpp",
@@ -2797,7 +2840,8 @@
         "\t\t\t\t\tfro->OutputImage( *pOutputImage, 0, 0 );",
         "\t\t\t\t\tfro->release();\t\t\t\t",
         "\t\t\t\t}"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/DRISE/Task.cpp",
@@ -2865,7 +2909,8 @@
         "\t\t\t\t\tstrcat( buf, daybuf );",
         "\t\t\t\t}",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Parsers/AsciiCommandParser.cpp",
@@ -2933,7 +2978,8 @@
         "\t\t\tstrcat( buf, daybuf );",
         "\t\t}",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Parsers/AsciiCommandParser.cpp",
@@ -3001,7 +3047,8 @@
         "\t\tstrcat( buf, daybuf );",
         "\t}",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Parsers/AsciiCommandParser.cpp",
@@ -3069,7 +3116,8 @@
         "\t\tstrcat( buf, daybuf );",
         "\t}",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Parsers/AsciiSceneParser.cpp",
@@ -3113,7 +3161,8 @@
         "\tprocessed.append( str.substr( y+1, str.length()-1 ) );",
         "",
         "\ttoken = String(processed.c_str());"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Parsers/AsciiSceneParser.cpp",
@@ -3157,7 +3206,8 @@
         "\treturn true;",
         "}",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Parsers/AsciiSceneParser.cpp",
@@ -3207,7 +3257,8 @@
         "",
         "\t\tif( x<str.size() ) {",
         "\t\t\tprocessed.append( str.substr( x, str.size() ) );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/RasterImages/HDRWriter.cpp",
@@ -3251,7 +3302,8 @@
         "#include \"../Interfaces/ILog.h\"",
         "#include \"../Version.h\"",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/RasterImages/HDRWriter.cpp",
@@ -3304,7 +3356,8 @@
         "\t\tstrcat( szHeader, szWhoWroteIt );",
         "\t\tstrcat( szHeader, szImageType );",
         "\t\tstrcat( szHeader, szImageDimensions );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/RasterImages/PPMWriter.cpp",
@@ -3348,7 +3401,8 @@
         "\tpWriteBuffer.Resize( strlen( header ) + width*height*3 );",
         "",
         "\t// Copy the header"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/RasterImages/RGBEAWriter.cpp",
@@ -3392,7 +3446,8 @@
         "#include \"../Interfaces/ILog.h\"",
         "#include \"../Version.h\"",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/RasterImages/RGBEAWriter.cpp",
@@ -3445,7 +3500,8 @@
         "\t\tstrcat( szHeader, szWhoWroteIt );",
         "\t\tstrcat( szHeader, szImageType );",
         "\t\tstrcat( szHeader, szImageDimensions );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Rendering/FileRasterizerOutput.cpp",
@@ -3495,7 +3551,8 @@
         "\tDiskFileWriteBuffer*\t\tmb = new DiskFileWriteBuffer( buf );",
         "\t",
         "\tif( !mb->ReadyToWrite() ) {"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Rendering/FileRasterizerOutput.cpp",
@@ -3545,7 +3602,8 @@
         "\t\tmb = new DiskFileWriteBuffer( buf );",
         "",
         "\t\t// If that doesn't work either we are just screwed"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Rendering/Win32WindowRasterizerOutput.cpp",
@@ -3589,7 +3647,8 @@
         "\t// We need to create a message pump so that this window can keep processing messages",
         "\thThread = CreateThread( 0, 0, WindowMessagePump, (LPVOID)this, 0, 0 );",
         "}"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Rendering/Win32WindowRasterizerOutput.cpp",
@@ -3633,7 +3692,8 @@
         "\t\t\t\t\t\t\tCS_CLASSDC,",
         "\t\t\t\t\t\t\tMsgProc,",
         "\t\t\t\t\t\t\t0L, 0L, "
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Utilities/Communications/SocketCommunications.cpp",
@@ -3692,7 +3752,8 @@
         "\t\tGlobalLog()->PrintSourceError( buffer, __FILE__, __LINE__ );",
         "\t\treturn false;",
         "\t}"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/Library/Volume/Volume.h",
@@ -3736,7 +3797,8 @@
         "\t\t\t\tif( f ) {",
         "\t\t\t\t\tfread( &m_pData[cnt*width*height], sizeof( T ), m_nWidth*m_nHeight, f );",
         "\t\t\t\t\tfclose( f );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/PRISE/SchedulerEngine.cpp",
@@ -3780,7 +3842,8 @@
         "\t\tGlobalLog()->PrintNew( pBuffer, __FILE__, __LINE__, \"buffer\" );",
         "",
         "\t\tpMesh->Deserialize( *pBuffer );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/PRISE/WorkerConnection.cpp",
@@ -3824,7 +3887,8 @@
         "\t\t\tunsigned int matlength = strlen(it->material.c_str());",
         "\t\t\tpSendBuffer->Resize( sizeof( Point3D ) + sizeof( Vector3D ) + length + matlength + 2, true );",
         "\t\t\tpSendBuffer->seek( IBuffer::START, 0 );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/PRISE/prise_mpi_worker.cpp",
@@ -3868,7 +3932,8 @@
         "\tGlobalLog()->PrintNew( pB, __FILE__, __LINE__, \"file stream printer\" );",
         "\tGlobalLogPriv()->AddPrinter( pB );",
         "\tpB->RemoveRef();"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/PRISE/prise_scheduler.cpp",
@@ -3912,7 +3977,8 @@
         "\tpA->RemoveRef();",
         "",
         "\tGlobalLog()->PrintEasyEvent( \"============================================================\" );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/PRISE/prise_worker.cpp",
@@ -3956,7 +4022,8 @@
         "\tpA->RemoveRef();",
         "",
         "\tGlobalLog()->PrintEasyEvent( \"============================================================\" );"
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/PRISE/prisemeshmaker.cpp",
@@ -4000,7 +4067,8 @@
         "\t\tmb->RemoveRef();",
         "\t}",
         ""
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/RISE/biospecbsdfmaker.cpp",
@@ -4044,7 +4112,8 @@
         "\t\tconst Scalar dEmitterTheta = (PI_OV_TWO/(numPositions-1))*(i);",
         "",
         "\t\tpDetector->PerformMeasurement("
-      ]
+      ],
+      "_frozen": true
     },
     {
       "file_path": "src/RISE/risempi.cpp",
@@ -4088,7 +4157,8 @@
         "\tGlobalLog()->PrintNew( pB, __FILE__, __LINE__, \"file stream printer\" );",
         "\tGlobalLogPriv()->AddPrinter( pB );",
         "\tpB->release();"
-      ]
+      ],
+      "_frozen": true
     }
   ]
 }
