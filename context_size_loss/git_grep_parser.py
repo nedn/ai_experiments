@@ -168,6 +168,9 @@ def parse_git_grep_output(output: str) -> List[Dict[str, Any]]:
     lines = output.strip().split('\n')
     
     for line in lines:
+        # Skip empty lines
+        if not line.strip():
+            continue
         line_type, filename, line_number, content = parse_git_grep_line(line)
         
         if line_type == LineType.SEPARATOR:
@@ -282,7 +285,7 @@ Examples:
     except FileNotFoundError as e:
         logger.error(f"File not found: {e}")
         sys.exit(1)
-    except json.JSONEncodeError as e:
+    except json.JSONDecodeError as e:
         logger.error(f"JSON encoding error: {e}")
         sys.exit(1)
     except Exception as e:
