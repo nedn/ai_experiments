@@ -31,6 +31,55 @@ except ImportError:
     sys.exit(1)
 
 
+def _load_from_env_file() -> Optional[str]:
+    """Load API key from .env file."""
+    env_files = ['.env', '.env.local', '.env.production']
+    
+    for env_file in env_files:
+        env_path = Path(env_file)
+        if env_path.exists():
+            try:
+                with open(env_path, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith('GEMINI_API_KEY='):
+                            key = line.split('=', 1)[1].strip().strip('"\'')
+                            if key:
+                                return key
+            except (IOError, IndexError):
+                continue
+    
+    return None
+
+
+def get_api_key() -> str:
+    """
+    Get API key from environment variable or .env file.
+    
+    Returns:
+        API key string
+        
+    Raises:
+        ValueError: If no API key is found
+    """
+    # Check environment variable
+    env_key = os.getenv('GEMINI_API_KEY')
+    if env_key:
+        return env_key
+    
+    # Check .env file
+    env_file_key = _load_from_env_file()
+    if env_file_key:
+        return env_file_key
+    
+    raise ValueError(
+        "No API key found. Please provide one of:\n"
+        "1. Set GEMINI_API_KEY environment variable\n"
+        "2. Create .env file with GEMINI_API_KEY=your_key\n"
+        "3. Initialize AIClient(api_key='your_key')"
+    )
+
+
 class AIClient:
     """
     Simple AI Client for Gemini API integration.
@@ -50,56 +99,9 @@ class AIClient:
             raise ValueError(f"Model must be one of: {', '.join(self.ALLOWED_MODELS)}")
         
         self.model_name = model
-        self.api_key = api_key or self._get_api_key()
+        self.api_key = api_key or get_api_key()
         self._configure_genai()
         self.model = genai.GenerativeModel(self.model_name)
-    
-    def _get_api_key(self) -> str:
-        """
-        Get API key from environment variable or .env file.
-        
-        Returns:
-            API key string
-            
-        Raises:
-            ValueError: If no API key is found
-        """
-        # Check environment variable
-        env_key = os.getenv('GEMINI_API_KEY')
-        if env_key:
-            return env_key
-        
-        # Check .env file
-        env_file_key = self._load_from_env_file()
-        if env_file_key:
-            return env_file_key
-        
-        raise ValueError(
-            "No API key found. Please provide one of:\n"
-            "1. Set GEMINI_API_KEY environment variable\n"
-            "2. Create .env file with GEMINI_API_KEY=your_key\n"
-            "3. Initialize AIClient(api_key='your_key')"
-        )
-    
-    def _load_from_env_file(self) -> Optional[str]:
-        """Load API key from .env file."""
-        env_files = ['.env', '.env.local', '.env.production']
-        
-        for env_file in env_files:
-            env_path = Path(env_file)
-            if env_path.exists():
-                try:
-                    with open(env_path, 'r') as f:
-                        for line in f:
-                            line = line.strip()
-                            if line.startswith('GEMINI_API_KEY='):
-                                key = line.split('=', 1)[1].strip().strip('"\'')
-                                if key:
-                                    return key
-                except (IOError, IndexError):
-                    continue
-        
-        return None
     
     def _configure_genai(self):
         """Configure the generative AI library."""

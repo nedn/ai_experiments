@@ -29,9 +29,12 @@ import time
 
 # Add the current directory to Python path for imports
 sys.path.append(str(Path(__file__).parent))
+# Add the common_util directory to Python path for imports
+sys.path.append(str(Path(__file__).parent.parent / "common_util"))
 
 from code_snippet import CodeSnippet, CodeSnippetList, snippets_from_json_list
 from validator import GoldenAnswerManager, generate_golden_answers
+from ai_client import AIClient, get_api_key
 
 # Configure logging
 logging.basicConfig(
@@ -153,26 +156,18 @@ def sanity_check_original_content(golden_answers: Dict[str, Dict[str, List[str]]
         return True
 
 
-def call_gemini_api(snippet_content: str, api_key: str, model: str = "gemini-2.5-pro") -> str:
+def call_gemini_api(snippet_content: str, ai_client: AIClient) -> str:
     """
-    Call Gemini API to convert sprintf to snprintf.
-    
-    This is a placeholder function - in practice, you would integrate with
-    the actual Gemini API client library.
+    Call Gemini API to convert sprintf to snprintf using the AI client.
     
     Args:
         snippet_content: The code snippet to convert
-        api_key: Gemini API key
-        model: Model to use (default: gemini-2.5-pro)
+        ai_client: Configured AIClient instance
         
     Returns:
         Converted code snippet
     """
-    # TODO: Replace this with actual Gemini API call
-    # For now, return a placeholder response
-    
-    prompt = f"""
-Convert the following C code snippet to use snprintf instead of sprintf for better buffer safety.
+    prompt = f"""Convert the following C code snippet to use snprintf instead of sprintf for better buffer safety.
 Make sure to add the buffer size parameter and handle the return value appropriately.
 
 Original code:
@@ -184,30 +179,63 @@ Converted code:
 ```c
 """
     
-    # Placeholder response - replace with actual API call
-    logger.debug(f"Would call {model} API with prompt length: {len(prompt)}")
+    logger.debug(f"Calling {ai_client.model_name} API with prompt length: {len(prompt)}")
     
-    # Simulate API call delay
-    time.sleep(0.1)
-    
-    # Return placeholder converted code
-    return f"// TODO: Convert sprintf to snprintf in:\n{snippet_content}"
+    try:
+        response = ai_client.generate_content(prompt)
+        
+        # Extract code from response if it's wrapped in markdown code blocks
+        if "```c" in response:
+            # Find the code block and extract content
+            start_marker = "```c"
+            end_marker = "```"
+            start_idx = response.find(start_marker)
+            if start_idx != -1:
+                start_idx += len(start_marker)
+                end_idx = response.find(end_marker, start_idx)
+                if end_idx != -1:
+                    response = response[start_idx:end_idx].strip()
+                else:
+                    # No closing marker, take everything after start
+                    response = response[start_idx:].strip()
+            else:
+                # No start marker, use response as-is
+                response = response.strip()
+        else:
+            response = response.strip()
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error calling Gemini API: {e}")
+        # Return a fallback response
+        return f"// Error converting sprintf to snprintf: {e}\n{snippet_content}"
 
 
 def generate_golden_answers_for_snippets(snippets: CodeSnippetList, api_key: str, 
+                                       model: str = "gemini-2.5-pro",
                                        output_file: str = "golden_answers.json") -> Dict[str, Dict[str, List[str]]]:
     """
-    Generate golden answers for all snippets using gemini-2.5-pro.
+    Generate golden answers for all snippets using the specified Gemini model.
     
     Args:
         snippets: Code snippets to convert
         api_key: Gemini API key
+        model: Gemini model to use
         output_file: File to save golden answers
         
     Returns:
         Dictionary mapping snippet ID to golden answer data with original and converted content
     """
-    logger.info(f"Generating golden answers for {len(snippets)} snippets using gemini-2.5-pro")
+    logger.info(f"Generating golden answers for {len(snippets)} snippets using {model}")
+    
+    # Initialize AI client
+    try:
+        ai_client = AIClient(api_key=api_key, model=model)
+        logger.info(f"Initialized AI client with model: {model}")
+    except Exception as e:
+        logger.error(f"Failed to initialize AI client: {e}")
+        raise
     
     golden_answers = {}
     manager = GoldenAnswerManager(output_file)
@@ -233,8 +261,8 @@ def generate_golden_answers_for_snippets(snippets: CodeSnippetList, api_key: str
             # Get snippet content
             snippet_content = snippet.get_full_content()
             
-            # Call Gemini API
-            converted_code = call_gemini_api(snippet_content, api_key)
+            # Call Gemini API using the AI client
+            converted_code = call_gemini_api(snippet_content, ai_client)
             
             # Store golden answer with both original and converted content
             golden_answers[snippet_id] = {
@@ -289,7 +317,7 @@ def main():
     enable_sanity_check = args.sanity_check and not args.no_sanity_check
     
     # Get API key
-    api_key = args.api_key or os.getenv('GEMINI_API_KEY')
+    api_key = args.api_key or get_api_key()
     if not api_key:
         logger.error("API key required. Set GEMINI_API_KEY env var or use --api-key")
         sys.exit(1)
@@ -315,7 +343,7 @@ def main():
         
         # Generate golden answers
         golden_answers = generate_golden_answers_for_snippets(
-            snippets, api_key, args.output_file
+            snippets, api_key, args.model, args.output_file
         )
         
         # Run sanity check if enabled
