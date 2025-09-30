@@ -11,7 +11,10 @@ from pathlib import Path
 # Add the current directory to Python path
 sys.path.append(str(Path(__file__).parent))
 
-from ai_client import AIClient
+try:
+    from .ai_client import AIClient
+except ImportError:
+    from ai_client import AIClient
 
 
 def example_basic_usage():

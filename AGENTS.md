@@ -138,17 +138,47 @@ python run_tests.py --pattern "*git*"
 ```
 This runs only tests matching a specific pattern.
 
-## Project Test Structure
+### 5. Working with Common Utilities
+When working with files in the `common_util/` directory:
+- Import from `common_util` module: `from common_util.ai_client import AIClient`
+- Test common utilities: `python run_tests.py --pattern "common_util/*"`
+- The AI client and examples are self-contained in this directory
+
+## Project Structure
+
+The project is organized into the following main directories:
+
+### Top Level
+- `run_tests.py` - Main test runner script (AI-friendly with JSON output)
+- `AGENTS.md` - This guide for AI agents
+- `LICENSE` - Project license
+
+### Directory Organization
+- `common_util/` - Shared utilities and common code
+  - `ai_client.py` - AI client for Gemini API integration
+  - `example_usage.py` - Usage examples for the AI client
+  - `test_ai_client.py` - Tests for the AI client
+- `context_size_loss/` - Context size loss experiments
+  - `test_validation.py` - Validation tests
+  - `tests/` - Additional test files
+    - `test_code_snippet.py` - Tests for code snippet classes
+    - `test_git_grep_parser.py` - Tests for git grep parsing functionality
+- `ai_constraining/` - AI constraining experiments
+
+### Test Structure
 
 The project currently has the following test files:
-- `context_size_loss/test_git_grep_parser.py` - Tests for git grep parsing functionality
-- `context_size_loss/test_code_snippet.py` - Tests for code snippet classes
+- `common_util/test_ai_client.py` - Tests for AI client functionality
+- `context_size_loss/test_validation.py` - Validation tests for context size loss experiments
+- `context_size_loss/tests/test_code_snippet.py` - Tests for code snippet classes
+- `context_size_loss/tests/test_git_grep_parser.py` - Tests for git grep parsing functionality
 
 ### Test Organization
 - Tests are co-located with the code they test
 - Each test file follows the naming convention `test_*.py`
 - Tests use Python's `unittest` framework
 - Tests are comprehensive and cover edge cases
+- Common utilities are tested in the `common_util/` directory
 
 ## Best Practices for AI Agents
 
@@ -196,6 +226,8 @@ If tests fail with import errors:
 1. Ensure all dependencies are installed
 2. Check that Python path includes the project directory
 3. Verify that test files are in the correct location
+4. For `common_util/` imports, use: `from common_util.ai_client import AIClient`
+5. Check that relative imports in `common_util/` files are working correctly
 
 ### Permission Errors
 If you get permission errors:
@@ -232,6 +264,11 @@ python run_tests.py --pattern "test_*integration*"
 ### Specific Test Execution
 ```bash
 python run_tests.py --test-files context_size_loss/test_git_grep_parser.py context_size_loss/test_code_snippet.py
+```
+
+### Testing Common Utilities
+```bash
+python run_tests.py --test-files common_util/test_ai_client.py
 ```
 
 ### Performance Testing
