@@ -1,0 +1,8 @@
+# Requirements for RISE Data Preparation Script
+# This script uses only Python standard library modules
+# No external dependencies required
+
+# The script requires:
+# - Python 3.6+
+# - Git (for cloning and checking out commits)
+# - Standard library modules: os, json, subprocess, shutil, sys, pathlib, typing, logging
