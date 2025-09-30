@@ -26,6 +26,8 @@ ENV/
 .pytest_cache/
 .coverage
 htmlcov/
+.test_results.json
+.failed_tests.json
 
 # Jupyter Notebook
 .ipynb_checkpoints
