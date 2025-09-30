@@ -1,8 +1,10 @@
-# Requirements for RISE Data Preparation Script
-# This script uses only Python standard library modules
-# No external dependencies required
+# Requirements for AI Experiments Project
+# Core dependencies for AI client and data processing
 
-# The script requires:
+# AI Client Dependencies
+google-generativeai>=0.8.0  # Official Gemini API client
+
+# The project requires:
 # - Python 3.6+
 # - Git (for cloning and checking out commits)
 # - Standard library modules: os, json, subprocess, shutil, sys, pathlib, typing, logging
