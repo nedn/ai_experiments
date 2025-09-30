@@ -132,7 +132,7 @@ class RISEDataPreparation:
             # Run git grep to find sprintf calls with context and make sure
             # we only match .c, .cc, .h files
             result = subprocess.run([
-                "git", "grep", "-n", "--context=10", "sprintf", "--", "*.c", "*.cc", "*.h"
+                "git", "grep", "-n", "--context=5", "sprintf", "--", "*.c", "*.cc", "*.cpp", "*.h"
             ], cwd=self.rise_repo_dir, capture_output=True, text=True)
             
             if result.returncode != 0 and result.returncode != 1:
