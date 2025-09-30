@@ -5,9 +5,6 @@ Git Grep Parser Module
 This module provides functions for parsing git grep output to extract structured
 code snippets. It handles the specific format of git grep output with context lines
 and matched lines.
-
-Author: AI Assistant
-Date: 2025
 """
 
 import re
