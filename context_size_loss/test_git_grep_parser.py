@@ -223,8 +223,8 @@ file.c-3-  return 0;
         self.assertEqual(len(result), 1)
         snippet = result[0]
         self.assertEqual(snippet.file_path, 'file.c')
-        self.assertEqual(snippet.matched_lines, [2])
-        self.assertEqual(snippet.context_lines, [1, 3])
+        self.assertEqual(list(snippet.matched_lines), [2])
+        self.assertEqual(list(snippet.context_lines), [1, 3])
         self.assertEqual(len(snippet.raw_surrounding_git_grep_lines), 3)
         self.assertEqual(len(snippet.raw_content), 3)
         self.assertEqual(snippet.raw_content[1], '  printf("hello");')
@@ -246,14 +246,14 @@ file2.c-12-  return 1;
         # First snippet
         snippet1 = result[0]
         self.assertEqual(snippet1.file_path, 'file1.c')
-        self.assertEqual(snippet1.matched_lines, [2])
-        self.assertEqual(snippet1.context_lines, [1, 3])
+        self.assertEqual(list(snippet1.matched_lines), [2])
+        self.assertEqual(list(snippet1.context_lines), [1, 3])
         
         # Second snippet
         snippet2 = result[1]
         self.assertEqual(snippet2.file_path, 'file2.c')
-        self.assertEqual(snippet2.matched_lines, [11])
-        self.assertEqual(snippet2.context_lines, [10, 12])
+        self.assertEqual(list(snippet2.matched_lines), [11])
+        self.assertEqual(list(snippet2.context_lines), [10, 12])
 
     def test_parse_git_grep_output_multiple_matches_in_snippet(self):
         """Test parse_git_grep_output with multiple matches in one snippet."""
@@ -267,8 +267,8 @@ file.c-4-  return 0;
         self.assertEqual(len(result), 1)
         snippet = result[0]
         self.assertEqual(snippet.file_path, 'file.c')
-        self.assertEqual(snippet.matched_lines, [2, 3])
-        self.assertEqual(snippet.context_lines, [1, 4])
+        self.assertEqual(list(snippet.matched_lines), [2, 3])
+        self.assertEqual(list(snippet.context_lines), [1, 4])
 
     def test_parse_git_grep_output_real_data(self):
         """Test parse_git_grep_output with real RISE repository data."""
@@ -280,28 +280,28 @@ file.c-4-  return 0;
         # First snippet - png.c with wsprintf
         snippet1 = result[0]
         self.assertEqual(snippet1.file_path, 'extlib/libpng/png.c')
-        self.assertEqual(snippet1.matched_lines, [641])
-        self.assertEqual(snippet1.context_lines, [638, 639, 640, 642, 643, 644])
+        self.assertEqual(list(snippet1.matched_lines), [641])
+        self.assertEqual(list(snippet1.context_lines), [638, 639, 640, 642, 643, 644])
         self.assertIn('wsprintf', snippet1.raw_content[3])
         
         # Second snippet - png.c with sprintf
         snippet2 = result[1]
         self.assertEqual(snippet2.file_path, 'extlib/libpng/png.c')
-        self.assertEqual(snippet2.matched_lines, [652])
-        self.assertEqual(snippet2.context_lines, [649, 650, 651, 653, 654, 655])
+        self.assertEqual(list(snippet2.matched_lines), [652])
+        self.assertEqual(list(snippet2.context_lines), [649, 650, 651, 653, 654, 655])
         self.assertIn('sprintf', snippet2.raw_content[3])
         
         # Third snippet - pnggccrd.c with multiple sprintf calls
         snippet3 = result[2]
         self.assertEqual(snippet3.file_path, 'extlib/libpng/pnggccrd.c')
-        self.assertEqual(snippet3.matched_lines, [5100, 5102])
-        self.assertEqual(snippet3.context_lines, [5097, 5098, 5099, 5103, 5104, 5105])
+        self.assertEqual(list(snippet3.matched_lines), [5100, 5102])
+        self.assertEqual(list(snippet3.context_lines), [5097, 5098, 5099, 5103, 5104, 5105])
         
         # Fourth snippet - pnggccrd.c with single sprintf call
         snippet4 = result[3]
         self.assertEqual(snippet4.file_path, 'extlib/libpng/pnggccrd.c')
-        self.assertEqual(snippet4.matched_lines, [5110])
-        self.assertEqual(snippet4.context_lines, [5107, 5108, 5109, 5111, 5112, 5113])
+        self.assertEqual(list(snippet4.matched_lines), [5110])
+        self.assertEqual(list(snippet4.context_lines), [5107, 5108, 5109, 5111, 5112, 5113])
 
     def test_parse_git_grep_output_context_only_snippet(self):
         """Test parse_git_grep_output with snippet containing only context lines."""
@@ -314,8 +314,8 @@ file.c-2-  // another comment
         self.assertEqual(len(result), 1)
         snippet = result[0]
         self.assertEqual(snippet.file_path, 'file.c')
-        self.assertEqual(snippet.matched_lines, [])
-        self.assertEqual(snippet.context_lines, [1, 2])
+        self.assertEqual(list(snippet.matched_lines), [])
+        self.assertEqual(list(snippet.context_lines), [1, 2])
 
     def test_parse_git_grep_output_trailing_separator(self):
         """Test parse_git_grep_output with trailing separator."""
@@ -486,6 +486,175 @@ file.c-3-  return 0;
             for path in [input_path, output_path]:
                 if os.path.exists(path):
                     os.unlink(path)
+
+
+class TestCodeSnippetImmutability(unittest.TestCase):
+    """Test cases for CodeSnippet immutability functionality."""
+    
+    def setUp(self):
+        """Set up test fixtures before each test method."""
+        self.sample_snippet = CodeSnippet(
+            file_path="test.py",
+            matched_lines=[10, 15],
+            context_lines=[8, 9, 11, 12, 13, 14, 16, 17],
+            raw_surrounding_git_grep_lines=[
+                "test.py-8-  def helper():",
+                "test.py-9-      pass",
+                "test.py:10:  print('hello')",
+                "test.py-11-  return True",
+                "test.py-12-",
+                "test.py-13-def main():",
+                "test.py-14-  x = 1",
+                "test.py:15:  print('world')",
+                "test.py-16-  return x",
+                "test.py-17-"
+            ],
+            raw_content=[
+                "  def helper():",
+                "      pass",
+                "  print('hello')",
+                "  return True",
+                "",
+                "def main():",
+                "  x = 1",
+                "  print('world')",
+                "  return x",
+                ""
+            ]
+        )
+    
+    def test_initial_state_is_mutable(self):
+        """Test that CodeSnippet starts in mutable state."""
+        self.assertFalse(self.sample_snippet.is_frozen())
+        self.assertIsInstance(self.sample_snippet.matched_lines, list)
+        self.assertIsInstance(self.sample_snippet.context_lines, list)
+        self.assertIsInstance(self.sample_snippet.raw_surrounding_git_grep_lines, list)
+        self.assertIsInstance(self.sample_snippet.raw_content, list)
+    
+    def test_freeze_makes_immutable(self):
+        """Test that freeze() makes the object immutable."""
+        # Initially mutable
+        self.assertFalse(self.sample_snippet.is_frozen())
+        
+        # Freeze the object
+        self.sample_snippet.freeze()
+        
+        # Should now be frozen
+        self.assertTrue(self.sample_snippet.is_frozen())
+        
+        # Fields should be converted to tuples
+        self.assertIsInstance(self.sample_snippet.matched_lines, tuple)
+        self.assertIsInstance(self.sample_snippet.context_lines, tuple)
+        self.assertIsInstance(self.sample_snippet.raw_surrounding_git_grep_lines, tuple)
+        self.assertIsInstance(self.sample_snippet.raw_content, tuple)
+    
+    def test_freeze_idempotent(self):
+        """Test that calling freeze() multiple times is safe."""
+        # First freeze
+        self.sample_snippet.freeze()
+        self.assertTrue(self.sample_snippet.is_frozen())
+        
+        # Second freeze should not cause issues
+        self.sample_snippet.freeze()
+        self.assertTrue(self.sample_snippet.is_frozen())
+    
+    def test_cannot_modify_frozen_object_direct_assignment(self):
+        """Test that direct field assignment fails on frozen object."""
+        self.sample_snippet.freeze()
+        
+        with self.assertRaises(ValueError) as context:
+            self.sample_snippet.file_path = "new_file.py"
+        
+        self.assertIn("Cannot modify frozen CodeSnippet object", str(context.exception))
+        self.assertIn("file_path", str(context.exception))
+    
+    def test_cannot_modify_frozen_object_list_operations(self):
+        """Test that list operations fail on frozen object."""
+        self.sample_snippet.freeze()
+        
+        # Test that we can't modify the lists (now tuples)
+        with self.assertRaises(AttributeError):
+            self.sample_snippet.matched_lines.append(20)
+        
+        with self.assertRaises(AttributeError):
+            self.sample_snippet.context_lines.append(21)
+        
+        with self.assertRaises(AttributeError):
+            self.sample_snippet.raw_content.append("new line")
+    
+    def test_freeze_preserves_data_integrity(self):
+        """Test that freeze() preserves all data correctly."""
+        original_data = {
+            'file_path': self.sample_snippet.file_path,
+            'matched_lines': list(self.sample_snippet.matched_lines),
+            'context_lines': list(self.sample_snippet.context_lines),
+            'raw_surrounding_git_grep_lines': list(self.sample_snippet.raw_surrounding_git_grep_lines),
+            'raw_content': list(self.sample_snippet.raw_content)
+        }
+        
+        self.sample_snippet.freeze()
+        
+        # Data should be preserved
+        self.assertEqual(self.sample_snippet.file_path, original_data['file_path'])
+        self.assertEqual(list(self.sample_snippet.matched_lines), original_data['matched_lines'])
+        self.assertEqual(list(self.sample_snippet.context_lines), original_data['context_lines'])
+        self.assertEqual(list(self.sample_snippet.raw_surrounding_git_grep_lines), original_data['raw_surrounding_git_grep_lines'])
+        self.assertEqual(list(self.sample_snippet.raw_content), original_data['raw_content'])
+    
+    def test_methods_work_after_freeze(self):
+        """Test that all methods work correctly after freezing."""
+        self.sample_snippet.freeze()
+        
+        # Test that methods still work
+        self.assertEqual(self.sample_snippet.get_total_lines(), 10)
+        self.assertEqual(self.sample_snippet.get_matched_line_count(), 2)
+        self.assertEqual(self.sample_snippet.get_context_line_count(), 8)
+        
+        # Test content methods
+        content = self.sample_snippet.get_full_content()
+        self.assertIn("print('hello')", content)
+        self.assertIn("print('world')", content)
+        
+        git_output = self.sample_snippet.get_git_grep_output()
+        self.assertIn("test.py:10:", git_output)
+        self.assertIn("test.py:15:", git_output)
+    
+    def test_json_serialization_after_freeze(self):
+        """Test that JSON serialization works after freezing."""
+        self.sample_snippet.freeze()
+        
+        # Should be able to convert to dict and JSON
+        snippet_dict = self.sample_snippet.to_dict()
+        self.assertIsInstance(snippet_dict, dict)
+        
+        json_str = self.sample_snippet.to_json()
+        self.assertIsInstance(json_str, str)
+        
+        # Should be able to recreate from dict
+        recreated = CodeSnippet.from_dict(snippet_dict)
+        self.assertEqual(recreated.file_path, self.sample_snippet.file_path)
+        self.assertEqual(list(recreated.matched_lines), list(self.sample_snippet.matched_lines))
+    
+    def test_parser_creates_frozen_snippets(self):
+        """Test that the parser creates frozen snippets."""
+        sample_output = """file.c-1-  int x = 1;
+file.c:2:  printf("hello");
+file.c-3-  return x;
+--
+file.c-5-  int y = 2;
+file.c:6:  printf("world");
+file.c-7-  return y;
+"""
+        
+        snippets = parse_git_grep_output(sample_output)
+        
+        # All snippets should be frozen
+        for snippet in snippets:
+            self.assertTrue(snippet.is_frozen(), f"Snippet {snippet.file_path} is not frozen")
+            self.assertIsInstance(snippet.matched_lines, tuple)
+            self.assertIsInstance(snippet.context_lines, tuple)
+            self.assertIsInstance(snippet.raw_surrounding_git_grep_lines, tuple)
+            self.assertIsInstance(snippet.raw_content, tuple)
 
 
 if __name__ == '__main__':

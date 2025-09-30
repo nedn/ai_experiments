@@ -151,12 +151,15 @@ def parse_git_grep_output(output: str) -> List[CodeSnippet]:
     Our parsing strategy is to define snippet as a contiguous block of lines that contain the sprintf calls 
     based on the output of git grep. Separate snippets are separated by separator lines "--".
     
+    Note: All returned CodeSnippet objects are automatically frozen (immutable) for thread safety
+    and data integrity. The freeze() method is called on each snippet before adding it to the result list.
+    
     Args:
         output: Raw output from git grep command
 
         
     Returns:
-        List of CodeSnippet objects containing the parsed snippet data.
+        List of frozen CodeSnippet objects containing the parsed snippet data.
     """
     snippets = []
     current_snippet = None
@@ -172,6 +175,7 @@ def parse_git_grep_output(output: str) -> List[CodeSnippet]:
         if line_type == LineType.SEPARATOR:
             # Save current snippet if it exists
             if current_snippet is not None:
+                current_snippet.freeze()  # Make snippet immutable before adding to list
                 snippets.append(current_snippet)
                 current_snippet = None
             continue
@@ -193,6 +197,7 @@ def parse_git_grep_output(output: str) -> List[CodeSnippet]:
     
     # Don't forget to add the last snippet if it exists
     if current_snippet is not None:
+        current_snippet.freeze()  # Make snippet immutable before adding to list
         snippets.append(current_snippet)
 
     return snippets
