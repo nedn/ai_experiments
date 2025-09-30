@@ -14,6 +14,7 @@ import argparse
 import logging
 from typing import List, Dict, Any, Tuple, Optional
 from enum import Enum
+from code_snippet import CodeSnippet
 
 
 def is_separator_line(line: str) -> bool:
@@ -109,7 +110,7 @@ def parse_git_grep_line(line: str) -> Tuple[LineType, Optional[str], Optional[in
     raise ValueError(f"Invalid line: {line}")
 
 
-def parse_git_grep_output(output: str) -> List[Dict[str, Any]]:
+def parse_git_grep_output(output: str) -> List[CodeSnippet]:
     """
     Parse git grep output to extract structured snippet data.
     
@@ -155,12 +156,7 @@ def parse_git_grep_output(output: str) -> List[Dict[str, Any]]:
 
         
     Returns:
-        List of snippet dictionaries. Each snippet dictionary contains the following keys:
-        - file_path: The path to the file containing the snippet
-        - matched_lines: The line numbers of matched lines. Note that this can be a list of line numbers
-            if there are multiple matched lines in the snippet spanning multiple lines.
-        - context_lines: A list of context lines numbers surrounding the matched lines.
-        - raw_surrounding_git_grep_lines: The raw content of the snippet. This includes the matched line and the context lines.
+        List of CodeSnippet objects containing the parsed snippet data.
     """
     snippets = []
     current_snippet = None
@@ -181,19 +177,19 @@ def parse_git_grep_output(output: str) -> List[Dict[str, Any]]:
             continue
         
         if current_snippet is None:
-            current_snippet = {
-                'file_path': filename,
-                'matched_lines': [],
-                'context_lines': [],
-                'raw_surrounding_git_grep_lines': [],
-                'raw_content': []
-            }
-        current_snippet['raw_surrounding_git_grep_lines'].append(line)
-        current_snippet['raw_content'].append(content)
+            current_snippet = CodeSnippet(
+                file_path=filename,
+                matched_lines=[],
+                context_lines=[],
+                raw_surrounding_git_grep_lines=[],
+                raw_content=[]
+            )
+        current_snippet.raw_surrounding_git_grep_lines.append(line)
+        current_snippet.raw_content.append(content)
         if line_type == LineType.MATCHED:
-            current_snippet['matched_lines'].append(line_number)
+            current_snippet.matched_lines.append(line_number)
         elif line_type == LineType.CONTEXT:
-            current_snippet['context_lines'].append(line_number)
+            current_snippet.context_lines.append(line_number)
     
     # Don't forget to add the last snippet if it exists
     if current_snippet is not None:
@@ -275,7 +271,9 @@ Examples:
         # Write output to JSON file
         logger.info(f"Writing output to: {args.output}")
         with open(args.output, 'w', encoding='utf-8') as f:
-            json.dump(snippets, f, indent=2, ensure_ascii=False)
+            # Convert CodeSnippet objects to dictionaries for JSON serialization
+            snippets_data = [snippet.to_dict() for snippet in snippets]
+            json.dump(snippets_data, f, indent=2, ensure_ascii=False)
         
         logger.info(f"Successfully wrote {len(snippets)} snippets to {args.output}")
         

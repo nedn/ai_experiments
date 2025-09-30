@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 import logging
 from git_grep_parser import parse_git_grep_output
+from code_snippet import CodeSnippet
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -119,12 +120,12 @@ class RISEDataPreparation:
             logger.error(f"Failed to checkout commit: {e}")
             raise
             
-    def extract_sprintf_snippets(self) -> List[Dict[str, Any]]:
+    def extract_sprintf_snippets(self) -> List[CodeSnippet]:
         """
         Extract sprintf code snippets using git grep with context.
         
         Returns:
-            List of dictionaries containing snippet information
+            List of CodeSnippet objects containing snippet information
         """
         logger.info("Extracting sprintf code snippets...")
         
@@ -151,12 +152,12 @@ class RISEDataPreparation:
         return snippets
 
         
-    def save_snippets(self, snippets: List[Dict[str, Any]]) -> str:
+    def save_snippets(self, snippets: List[CodeSnippet]) -> str:
         """
         Save extracted snippets to a structured JSON file.
         
         Args:
-            snippets: List of snippet dictionaries
+            snippets: List of CodeSnippet objects
             
         Returns:
             Path to the saved file
@@ -172,7 +173,7 @@ class RISEDataPreparation:
                 "total_snippets": len(snippets),
                 "description": "Code snippets containing sprintf calls from RISE repository"
             },
-            "snippets": snippets
+            "snippets": [snippet.to_dict() for snippet in snippets]
         }
         
         # Save to JSON file
@@ -182,12 +183,12 @@ class RISEDataPreparation:
         logger.info(f"Saved {len(snippets)} snippets to {output_file}")
         return str(output_file)
         
-    def generate_summary_report(self, snippets: List[Dict[str, Any]]) -> str:
+    def generate_summary_report(self, snippets: List[CodeSnippet]) -> str:
         """
         Generate a summary report of the extracted data.
         
         Args:
-            snippets: List of snippet dictionaries
+            snippets: List of CodeSnippet objects
             
         Returns:
             Path to the summary report file
@@ -197,7 +198,7 @@ class RISEDataPreparation:
         # Count snippets by file
         file_counts = {}
         for snippet in snippets:
-            file_path = snippet["file_path"]
+            file_path = snippet.file_path
             file_counts[file_path] = file_counts.get(file_path, 0) + 1
             
         with open(report_file, 'w', encoding='utf-8') as f:

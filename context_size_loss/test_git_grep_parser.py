@@ -26,6 +26,7 @@ from git_grep_parser import (
     parse_git_grep_output,
     setup_logging
 )
+from code_snippet import CodeSnippet
 
 
 class TestGitGrepParser(unittest.TestCase):
@@ -221,12 +222,12 @@ file.c-3-  return 0;
         
         self.assertEqual(len(result), 1)
         snippet = result[0]
-        self.assertEqual(snippet['file_path'], 'file.c')
-        self.assertEqual(snippet['matched_lines'], [2])
-        self.assertEqual(snippet['context_lines'], [1, 3])
-        self.assertEqual(len(snippet['raw_surrounding_git_grep_lines']), 3)
-        self.assertEqual(len(snippet['raw_content']), 3)
-        self.assertEqual(snippet['raw_content'][1], '  printf("hello");')
+        self.assertEqual(snippet.file_path, 'file.c')
+        self.assertEqual(snippet.matched_lines, [2])
+        self.assertEqual(snippet.context_lines, [1, 3])
+        self.assertEqual(len(snippet.raw_surrounding_git_grep_lines), 3)
+        self.assertEqual(len(snippet.raw_content), 3)
+        self.assertEqual(snippet.raw_content[1], '  printf("hello");')
 
     def test_parse_git_grep_output_multiple_snippets(self):
         """Test parse_git_grep_output with multiple snippets."""
@@ -244,15 +245,15 @@ file2.c-12-  return 1;
         
         # First snippet
         snippet1 = result[0]
-        self.assertEqual(snippet1['file_path'], 'file1.c')
-        self.assertEqual(snippet1['matched_lines'], [2])
-        self.assertEqual(snippet1['context_lines'], [1, 3])
+        self.assertEqual(snippet1.file_path, 'file1.c')
+        self.assertEqual(snippet1.matched_lines, [2])
+        self.assertEqual(snippet1.context_lines, [1, 3])
         
         # Second snippet
         snippet2 = result[1]
-        self.assertEqual(snippet2['file_path'], 'file2.c')
-        self.assertEqual(snippet2['matched_lines'], [11])
-        self.assertEqual(snippet2['context_lines'], [10, 12])
+        self.assertEqual(snippet2.file_path, 'file2.c')
+        self.assertEqual(snippet2.matched_lines, [11])
+        self.assertEqual(snippet2.context_lines, [10, 12])
 
     def test_parse_git_grep_output_multiple_matches_in_snippet(self):
         """Test parse_git_grep_output with multiple matches in one snippet."""
@@ -265,9 +266,9 @@ file.c-4-  return 0;
         
         self.assertEqual(len(result), 1)
         snippet = result[0]
-        self.assertEqual(snippet['file_path'], 'file.c')
-        self.assertEqual(snippet['matched_lines'], [2, 3])
-        self.assertEqual(snippet['context_lines'], [1, 4])
+        self.assertEqual(snippet.file_path, 'file.c')
+        self.assertEqual(snippet.matched_lines, [2, 3])
+        self.assertEqual(snippet.context_lines, [1, 4])
 
     def test_parse_git_grep_output_real_data(self):
         """Test parse_git_grep_output with real RISE repository data."""
@@ -278,29 +279,29 @@ file.c-4-  return 0;
         
         # First snippet - png.c with wsprintf
         snippet1 = result[0]
-        self.assertEqual(snippet1['file_path'], 'extlib/libpng/png.c')
-        self.assertEqual(snippet1['matched_lines'], [641])
-        self.assertEqual(snippet1['context_lines'], [638, 639, 640, 642, 643, 644])
-        self.assertIn('wsprintf', snippet1['raw_content'][3])
+        self.assertEqual(snippet1.file_path, 'extlib/libpng/png.c')
+        self.assertEqual(snippet1.matched_lines, [641])
+        self.assertEqual(snippet1.context_lines, [638, 639, 640, 642, 643, 644])
+        self.assertIn('wsprintf', snippet1.raw_content[3])
         
         # Second snippet - png.c with sprintf
         snippet2 = result[1]
-        self.assertEqual(snippet2['file_path'], 'extlib/libpng/png.c')
-        self.assertEqual(snippet2['matched_lines'], [652])
-        self.assertEqual(snippet2['context_lines'], [649, 650, 651, 653, 654, 655])
-        self.assertIn('sprintf', snippet2['raw_content'][3])
+        self.assertEqual(snippet2.file_path, 'extlib/libpng/png.c')
+        self.assertEqual(snippet2.matched_lines, [652])
+        self.assertEqual(snippet2.context_lines, [649, 650, 651, 653, 654, 655])
+        self.assertIn('sprintf', snippet2.raw_content[3])
         
         # Third snippet - pnggccrd.c with multiple sprintf calls
         snippet3 = result[2]
-        self.assertEqual(snippet3['file_path'], 'extlib/libpng/pnggccrd.c')
-        self.assertEqual(snippet3['matched_lines'], [5100, 5102])
-        self.assertEqual(snippet3['context_lines'], [5097, 5098, 5099, 5103, 5104, 5105])
+        self.assertEqual(snippet3.file_path, 'extlib/libpng/pnggccrd.c')
+        self.assertEqual(snippet3.matched_lines, [5100, 5102])
+        self.assertEqual(snippet3.context_lines, [5097, 5098, 5099, 5103, 5104, 5105])
         
         # Fourth snippet - pnggccrd.c with single sprintf call
         snippet4 = result[3]
-        self.assertEqual(snippet4['file_path'], 'extlib/libpng/pnggccrd.c')
-        self.assertEqual(snippet4['matched_lines'], [5110])
-        self.assertEqual(snippet4['context_lines'], [5107, 5108, 5109, 5111, 5112, 5113])
+        self.assertEqual(snippet4.file_path, 'extlib/libpng/pnggccrd.c')
+        self.assertEqual(snippet4.matched_lines, [5110])
+        self.assertEqual(snippet4.context_lines, [5107, 5108, 5109, 5111, 5112, 5113])
 
     def test_parse_git_grep_output_context_only_snippet(self):
         """Test parse_git_grep_output with snippet containing only context lines."""
@@ -312,9 +313,9 @@ file.c-2-  // another comment
         
         self.assertEqual(len(result), 1)
         snippet = result[0]
-        self.assertEqual(snippet['file_path'], 'file.c')
-        self.assertEqual(snippet['matched_lines'], [])
-        self.assertEqual(snippet['context_lines'], [1, 2])
+        self.assertEqual(snippet.file_path, 'file.c')
+        self.assertEqual(snippet.matched_lines, [])
+        self.assertEqual(snippet.context_lines, [1, 2])
 
     def test_parse_git_grep_output_trailing_separator(self):
         """Test parse_git_grep_output with trailing separator."""
