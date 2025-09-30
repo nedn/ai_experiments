@@ -240,7 +240,7 @@ class AITestRunner:
         
         print("\n" + "="*80)
         if suite_result.failed == 0 and suite_result.errors == 0:
-            print("✅ ALL TESTS PASSED!")
+            print(f"✅ ALL TESTS PASSED! ({suite_result.passed}/{suite_result.total_tests})")
         else:
             print(f"❌ {suite_result.failed + suite_result.errors} TESTS FAILED")
             print(f"\nTo run only failed tests: python run_tests.py --focus-failures")
