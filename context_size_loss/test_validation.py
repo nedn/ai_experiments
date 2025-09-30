@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""
+Test script for the validation system
+
+This script demonstrates how to use the simplified validation system
+with golden answers and edit distance comparison.
+
+Author: AI Assistant
+Date: 2025
+"""
+
+import json
+import sys
+from pathlib import Path
+
+# Add current directory to path for imports
+sys.path.append(str(Path(__file__).parent))
+
+from validator import ExperimentValidator, validate_with_edit_distance, ValidationResult
+
+
+def test_edit_distance_validation():
+    """Test the edit distance validation function."""
+    print("Testing edit distance validation...")
+    
+    # Test case 1: Perfect match
+    golden = "snprintf(buf, sizeof(buf), \"%s\", str);"
+    generated = "snprintf(buf, sizeof(buf), \"%s\", str);"
+    
+    result = validate_with_edit_distance(generated, golden, threshold=0.8)
+    print(f"Test 1 - Perfect match: {result.is_correct} (similarity: {result.similarity_score:.3f})")
+    
+    # Test case 2: Good match (minor differences)
+    golden2 = "snprintf(buf, sizeof(buf), \"%s\", str);"
+    generated2 = "snprintf(buf, sizeof(buf), \"%s\", str);  // Added comment"
+    
+    result2 = validate_with_edit_distance(generated2, golden2, threshold=0.8)
+    print(f"Test 2 - Good match: {result2.is_correct} (similarity: {result2.similarity_score:.3f})")
+    
+    # Test case 3: Poor match (still sprintf)
+    golden3 = "snprintf(buf, sizeof(buf), \"%s\", str);"
+    generated3 = "sprintf(buf, \"%s\", str);"
+    
+    result3 = validate_with_edit_distance(generated3, golden3, threshold=0.8)
+    print(f"Test 3 - Poor match: {result3.is_correct} (similarity: {result3.similarity_score:.3f})")
+    
+    # Test case 4: Very different
+    golden4 = "snprintf(buf, sizeof(buf), \"%s\", str);"
+    generated4 = "printf(\"Hello world\");"
+    
+    result4 = validate_with_edit_distance(generated4, golden4, threshold=0.8)
+    print(f"Test 4 - Very different: {result4.is_correct} (similarity: {result4.similarity_score:.3f})")
+    
+    print()
+
+
+def test_golden_answer_manager():
+    """Test the golden answer manager."""
+    print("Testing golden answer manager...")
+    
+    # Create test golden answers
+    test_golden_answers = {
+        "snippet_001": "snprintf(buf, sizeof(buf), \"%s\", str);",
+        "snippet_002": "snprintf(filename, sizeof(filename), \"%s_%d.prisemesh\", argv[2], i);",
+        "snippet_003": "snprintf(time_buf, sizeof(time_buf), \"%d %s %d %02d:%02d:%02d +0000\", ptime->day, month, ptime->year, ptime->hour, ptime->minute, ptime->second);"
+    }
+    
+    # Save test golden answers
+    test_file = "test_golden_answers.json"
+    with open(test_file, 'w') as f:
+        json.dump(test_golden_answers, f, indent=2)
+    
+    # Test validator
+    validator = ExperimentValidator(test_file, similarity_threshold=0.8)
+    
+    # Test validation
+    test_snippet_ids = ["snippet_001", "snippet_002", "snippet_003"]
+    test_generated_codes = [
+        "snprintf(buf, sizeof(buf), \"%s\", str);",  # Perfect match
+        "sprintf(filename, \"%s_%d.prisemesh\", argv[2], i);",  # Poor match
+        "snprintf(time_buf, sizeof(time_buf), \"%d %s %d %02d:%02d:%02d +0000\", ptime->day, month, ptime->year, ptime->hour, ptime->minute, ptime->second);"  # Perfect match
+    ]
+    
+    results = validator.validate_batch(test_snippet_ids, test_generated_codes)
+    
+    print("Validation results:")
+    for i, (snippet_id, result) in enumerate(zip(test_snippet_ids, results)):
+        print(f"  {snippet_id}: {result.is_correct} (similarity: {result.similarity_score:.3f})")
+    
+    # Calculate metrics
+    metrics = validator.calculate_batch_metrics(results)
+    print(f"\nBatch metrics:")
+    print(f"  Success rate: {metrics['success_rate']:.2%}")
+    print(f"  Average similarity: {metrics['average_similarity']:.3f}")
+    print(f"  Correct conversions: {metrics['correct_conversions']}/{metrics['total_conversions']}")
+    
+    # Clean up test file
+    Path(test_file).unlink()
+    print()
+
+
+def test_with_real_snippets():
+    """Test with real snippets from the data file."""
+    print("Testing with real snippets...")
+    
+    snippets_file = "rise_data/sprintf_snippets.json"
+    if not Path(snippets_file).exists():
+        print(f"Snippets file {snippets_file} not found, skipping real data test")
+        return
+    
+    try:
+        # Load snippets
+        with open(snippets_file, 'r') as f:
+            data = json.load(f)
+        
+        snippets_data = data.get('snippets', data)
+        
+        # Take first 3 snippets for testing
+        test_snippets = snippets_data[:3]
+        
+        print(f"Testing with {len(test_snippets)} real snippets...")
+        
+        # Create mock golden answers
+        mock_golden_answers = {}
+        for i, snippet in enumerate(test_snippets):
+            snippet_id = f"snippet_{i:03d}"
+            # Mock golden answer - in practice, this would be generated by gemini-2.5-pro
+            mock_golden_answers[snippet_id] = f"// Golden answer for snippet {i} - TODO: Generate with Gemini API"
+        
+        # Save mock golden answers
+        test_file = "test_real_golden_answers.json"
+        with open(test_file, 'w') as f:
+            json.dump(mock_golden_answers, f, indent=2)
+        
+        # Test validator
+        validator = ExperimentValidator(test_file, similarity_threshold=0.8)
+        
+        # Test with mock generated codes
+        snippet_ids = list(mock_golden_answers.keys())
+        mock_generated_codes = [
+            "// Mock generated code 1 - TODO: Generate with experiment",
+            "// Mock generated code 2 - TODO: Generate with experiment", 
+            "// Mock generated code 3 - TODO: Generate with experiment"
+        ]
+        
+        results = validator.validate_batch(snippet_ids, mock_generated_codes)
+        
+        print("Real snippet validation results:")
+        for snippet_id, result in zip(snippet_ids, results):
+            print(f"  {snippet_id}: {result.is_correct} (similarity: {result.similarity_score:.3f})")
+        
+        # Clean up
+        Path(test_file).unlink()
+        
+    except Exception as e:
+        print(f"Error testing with real snippets: {e}")
+    
+    print()
+
+
+def main():
+    """Run all validation tests."""
+    print("=" * 60)
+    print("VALIDATION SYSTEM TEST")
+    print("=" * 60)
+    
+    test_edit_distance_validation()
+    test_golden_answer_manager()
+    test_with_real_snippets()
+    
+    print("=" * 60)
+    print("ALL TESTS COMPLETED")
+    print("=" * 60)
+    print()
+    print("Next steps:")
+    print("1. Generate real golden answers: python generate_golden_answers.py --api-key YOUR_KEY")
+    print("2. Run experiment with different batch sizes")
+    print("3. Validate results against golden answers")
+    print("4. Analyze success rates vs batch size")
+
+
+if __name__ == "__main__":
+    main()
