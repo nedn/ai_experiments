@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 import logging
 from git_grep_parser import parse_git_grep_output
-from code_snippet import CodeSnippet
+from code_snippet import CodeSnippet, CodeSnippetList
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -120,12 +120,12 @@ class RISEDataPreparation:
             logger.error(f"Failed to checkout commit: {e}")
             raise
             
-    def extract_sprintf_snippets(self) -> List[CodeSnippet]:
+    def extract_sprintf_snippets(self) -> CodeSnippetList:
         """
         Extract sprintf code snippets using git grep with context.
         
         Returns:
-            List of CodeSnippet objects containing snippet information
+            CodeSnippetList containing snippet information
         """
         logger.info("Extracting sprintf code snippets...")
         
@@ -152,12 +152,12 @@ class RISEDataPreparation:
         return snippets
 
         
-    def save_snippets(self, snippets: List[CodeSnippet]) -> str:
+    def save_snippets(self, snippets: CodeSnippetList) -> str:
         """
         Save extracted snippets to a structured JSON file.
         
         Args:
-            snippets: List of CodeSnippet objects
+            snippets: CodeSnippetList containing snippet objects
             
         Returns:
             Path to the saved file
@@ -170,49 +170,53 @@ class RISEDataPreparation:
                 "repository": self.repo_url,
                 "commit": self.target_commit,
                 "extraction_date": subprocess.run(["date"], capture_output=True, text=True).stdout.strip(),
-                "total_snippets": len(snippets),
+                "total_snippets": snippets.get_total_snippets(),
+                "total_files": snippets.get_file_count(),
+                "total_lines": snippets.get_total_lines(),
+                "total_matched_lines": snippets.get_total_matched_lines(),
+                "total_context_lines": snippets.get_total_context_lines(),
                 "description": "Code snippets containing sprintf calls from RISE repository"
             },
-            "snippets": [snippet.to_dict() for snippet in snippets]
+            "snippets": snippets.to_dict()["snippets"]
         }
         
         # Save to JSON file
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
             
-        logger.info(f"Saved {len(snippets)} snippets to {output_file}")
+        logger.info(f"Saved {snippets.get_total_snippets()} snippets to {output_file}")
         return str(output_file)
         
-    def generate_summary_report(self, snippets: List[CodeSnippet]) -> str:
+    def generate_summary_report(self, snippets: CodeSnippetList) -> str:
         """
         Generate a summary report of the extracted data.
         
         Args:
-            snippets: List of CodeSnippet objects
+            snippets: CodeSnippetList containing snippet objects
             
         Returns:
             Path to the summary report file
         """
         report_file = self.output_dir / "extraction_summary.txt"
         
-        # Count snippets by file
-        file_counts = {}
-        for snippet in snippets:
-            file_path = snippet.file_path
-            file_counts[file_path] = file_counts.get(file_path, 0) + 1
-            
+        # Get snippets grouped by file
+        file_groups = snippets.get_snippets_by_file()
+        
         with open(report_file, 'w', encoding='utf-8') as f:
             f.write("RISE sprintf Code Snippets Extraction Summary\n")
             f.write("=" * 50 + "\n\n")
             f.write(f"Repository: {self.repo_url}\n")
             f.write(f"Commit: {self.target_commit}\n")
-            f.write(f"Total snippets extracted: {len(snippets)}\n")
-            f.write(f"Files containing sprintf calls: {len(file_counts)}\n\n")
+            f.write(f"Total snippets extracted: {snippets.get_total_snippets()}\n")
+            f.write(f"Files containing sprintf calls: {snippets.get_file_count()}\n")
+            f.write(f"Total lines across all snippets: {snippets.get_total_lines()}\n")
+            f.write(f"Total matched lines: {snippets.get_total_matched_lines()}\n")
+            f.write(f"Total context lines: {snippets.get_total_context_lines()}\n\n")
             
             f.write("Snippets per file:\n")
             f.write("-" * 20 + "\n")
-            for file_path, count in sorted(file_counts.items()):
-                f.write(f"{file_path}: {count} snippets\n")
+            for file_path, file_snippets in sorted(file_groups.items()):
+                f.write(f"{file_path}: {len(file_snippets)} snippets\n")
                 
         logger.info(f"Generated summary report: {report_file}")
         return str(report_file)

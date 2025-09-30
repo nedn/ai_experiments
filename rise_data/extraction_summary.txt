@@ -1,0 +1,48 @@
+RISE sprintf Code Snippets Extraction Summary
+==================================================
+
+Repository: https://github.com/aravindkrishnaswamy/RISE
+Commit: 297d0339a7f7acd1418e322a30a21f44c7dbbb1d
+Total snippets extracted: 66
+Files containing sprintf calls: 35
+Total lines across all snippets: 1119
+Total matched lines: 147
+Total context lines: 972
+
+Snippets per file:
+--------------------
+extlib/libpng/png.c: 1 snippets
+extlib/libpng/pnggccrd.c: 1 snippets
+extlib/libpng/pngread.c: 2 snippets
+extlib/libpng/pngrtran.c: 1 snippets
+extlib/libpng/pngrutil.c: 2 snippets
+extlib/libpng/pngvcrd.c: 1 snippets
+extlib/libpng/pngwrite.c: 2 snippets
+extlib/libpng/pngwutil.c: 3 snippets
+extlib/libtiff/tif_dirinfo.c: 1 snippets
+extlib/libtiff/tif_getimage.c: 8 snippets
+extlib/libtiff/tif_win3.c: 2 snippets
+extlib/libtiff/tif_win32.c: 2 snippets
+extlib/zlib/gzio.c: 3 snippets
+extlib/zlib/zlib.h: 2 snippets
+extlib/zlib/zutil.c: 2 snippets
+src/3DSMax/RISERenderImage.cpp: 4 snippets
+src/DRISE/AnimationTask.cpp: 2 snippets
+src/DRISE/Task.cpp: 2 snippets
+src/Library/Parsers/AsciiCommandParser.cpp: 3 snippets
+src/Library/Parsers/AsciiSceneParser.cpp: 3 snippets
+src/Library/RasterImages/HDRWriter.cpp: 2 snippets
+src/Library/RasterImages/PPMWriter.cpp: 1 snippets
+src/Library/RasterImages/RGBEAWriter.cpp: 2 snippets
+src/Library/Rendering/FileRasterizerOutput.cpp: 2 snippets
+src/Library/Rendering/Win32WindowRasterizerOutput.cpp: 2 snippets
+src/Library/Utilities/Communications/SocketCommunications.cpp: 1 snippets
+src/Library/Volume/Volume.h: 1 snippets
+src/PRISE/SchedulerEngine.cpp: 1 snippets
+src/PRISE/WorkerConnection.cpp: 1 snippets
+src/PRISE/prise_mpi_worker.cpp: 1 snippets
+src/PRISE/prise_scheduler.cpp: 1 snippets
+src/PRISE/prise_worker.cpp: 1 snippets
+src/PRISE/prisemeshmaker.cpp: 1 snippets
+src/RISE/biospecbsdfmaker.cpp: 1 snippets
+src/RISE/risempi.cpp: 1 snippets

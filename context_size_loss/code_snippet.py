@@ -244,6 +244,216 @@ def snippets_from_json_list(json_data: List[Dict[str, Any]]) -> List[CodeSnippet
     return [CodeSnippet.from_dict(snippet_data) for snippet_data in json_data]
 
 
+class CodeSnippetList:
+    """
+    Immutable collection of frozen CodeSnippet objects.
+    
+    This class provides a thread-safe, immutable container for CodeSnippet objects.
+    All CodeSnippet objects in the list are automatically frozen (immutable).
+    The CodeSnippetList itself is also immutable after initialization.
+    """
+    
+    def __init__(self, snippets: List[CodeSnippet]):
+        """
+        Initialize CodeSnippetList with a list of CodeSnippet objects.
+        
+        Args:
+            snippets: List of CodeSnippet objects (will be frozen automatically)
+            
+        Raises:
+            ValueError: If any snippet is not frozen or if snippets is not a list
+        """
+        if not isinstance(snippets, list):
+            raise ValueError("snippets must be a list")
+        
+        # Ensure all snippets are frozen
+        frozen_snippets = []
+        for snippet in snippets:
+            if not isinstance(snippet, CodeSnippet):
+                raise ValueError("All items must be CodeSnippet instances")
+            if not snippet.is_frozen():
+                snippet.freeze()
+            frozen_snippets.append(snippet)
+        
+        # Store as tuple for immutability
+        self._snippets = tuple(frozen_snippets)
+        self._frozen = True
+    
+    def __len__(self) -> int:
+        """Return the number of snippets in the list."""
+        return len(self._snippets)
+    
+    def __getitem__(self, index: int) -> CodeSnippet:
+        """Get a snippet by index."""
+        return self._snippets[index]
+    
+    def __iter__(self):
+        """Iterate over snippets."""
+        return iter(self._snippets)
+    
+    def __contains__(self, snippet: CodeSnippet) -> bool:
+        """Check if a snippet is in the list."""
+        return snippet in self._snippets
+    
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Override setattr to prevent modification of frozen objects."""
+        if hasattr(self, '_frozen') and self._frozen and name != '_frozen':
+            raise ValueError(f"Cannot modify frozen CodeSnippetList object. Attempted to set '{name}'")
+        super().__setattr__(name, value)
+    
+    def __delattr__(self, name: str) -> None:
+        """Override delattr to prevent deletion of attributes."""
+        if hasattr(self, '_frozen') and self._frozen:
+            raise ValueError(f"Cannot delete attributes from frozen CodeSnippetList object. Attempted to delete '{name}'")
+        super().__delattr__(name)
+    
+    def is_frozen(self) -> bool:
+        """
+        Check if this CodeSnippetList object is frozen (immutable).
+        
+        Returns:
+            True if the object is frozen, False otherwise
+        """
+        return self._frozen
+    
+    def get_total_snippets(self) -> int:
+        """
+        Get the total number of snippets in this list.
+        
+        Returns:
+            Total number of snippets
+        """
+        return len(self._snippets)
+    
+    def get_total_lines(self) -> int:
+        """
+        Get the total number of lines across all snippets.
+        
+        Returns:
+            Total number of lines in all snippets
+        """
+        return sum(snippet.get_total_lines() for snippet in self._snippets)
+    
+    def get_total_matched_lines(self) -> int:
+        """
+        Get the total number of matched lines across all snippets.
+        
+        Returns:
+            Total number of matched lines in all snippets
+        """
+        return sum(snippet.get_matched_line_count() for snippet in self._snippets)
+    
+    def get_total_context_lines(self) -> int:
+        """
+        Get the total number of context lines across all snippets.
+        
+        Returns:
+            Total number of context lines in all snippets
+        """
+        return sum(snippet.get_context_line_count() for snippet in self._snippets)
+    
+    def get_snippets_by_file(self) -> Dict[str, List[CodeSnippet]]:
+        """
+        Group snippets by file path.
+        
+        Returns:
+            Dictionary mapping file paths to lists of snippets
+        """
+        file_groups = {}
+        for snippet in self._snippets:
+            file_path = snippet.file_path
+            if file_path not in file_groups:
+                file_groups[file_path] = []
+            file_groups[file_path].append(snippet)
+        return file_groups
+    
+    def get_file_count(self) -> int:
+        """
+        Get the number of unique files represented in this list.
+        
+        Returns:
+            Number of unique files
+        """
+        unique_files = set(snippet.file_path for snippet in self._snippets)
+        return len(unique_files)
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'CodeSnippetList':
+        """
+        Create a CodeSnippetList instance from a dictionary.
+        
+        Args:
+            data: Dictionary containing snippets data
+            
+        Returns:
+            CodeSnippetList instance
+            
+        Raises:
+            ValueError: If required fields are missing or invalid
+        """
+        if 'snippets' not in data:
+            raise ValueError("Missing required field: snippets")
+        
+        snippets_data = data['snippets']
+        if not isinstance(snippets_data, list):
+            raise ValueError("snippets must be a list")
+        
+        snippets = [CodeSnippet.from_dict(snippet_data) for snippet_data in snippets_data]
+        return cls(snippets)
+    
+    @classmethod
+    def from_json(cls, json_str: str) -> 'CodeSnippetList':
+        """
+        Create a CodeSnippetList instance from a JSON string.
+        
+        Args:
+            json_str: JSON string containing snippets data
+            
+        Returns:
+            CodeSnippetList instance
+            
+        Raises:
+            ValueError: If JSON is invalid or required fields are missing
+            json.JSONDecodeError: If JSON parsing fails
+        """
+        try:
+            data = json.loads(json_str)
+            return cls.from_dict(data)
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(f"Invalid JSON: {e.msg}", e.doc, e.pos)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the CodeSnippetList to a dictionary.
+        
+        Returns:
+            Dictionary representation of the snippets list
+        """
+        return {
+            "snippets": [snippet.to_dict() for snippet in self._snippets]
+        }
+    
+    def to_json(self, indent: Optional[int] = None) -> str:
+        """
+        Convert the CodeSnippetList to a JSON string.
+        
+        Args:
+            indent: Number of spaces for JSON indentation (None for compact)
+            
+        Returns:
+            JSON string representation of the snippets list
+        """
+        return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
+    
+    def __str__(self) -> str:
+        """String representation of the snippets list."""
+        return f"CodeSnippetList({len(self._snippets)} snippets)"
+    
+    def __repr__(self) -> str:
+        """Detailed string representation of the snippets list."""
+        return f"CodeSnippetList({len(self._snippets)} snippets, {self.get_file_count()} files)"
+
+
 def snippets_to_json_list(snippets: List[CodeSnippet], indent: Optional[int] = None) -> str:
     """
     Convert a list of CodeSnippet instances to a JSON string.

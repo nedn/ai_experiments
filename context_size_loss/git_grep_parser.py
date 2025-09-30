@@ -14,7 +14,7 @@ import argparse
 import logging
 from typing import List, Dict, Any, Tuple, Optional
 from enum import Enum
-from code_snippet import CodeSnippet
+from code_snippet import CodeSnippet, CodeSnippetList
 
 
 def is_separator_line(line: str) -> bool:
@@ -110,7 +110,7 @@ def parse_git_grep_line(line: str) -> Tuple[LineType, Optional[str], Optional[in
     raise ValueError(f"Invalid line: {line}")
 
 
-def parse_git_grep_output(output: str) -> List[CodeSnippet]:
+def parse_git_grep_output(output: str) -> CodeSnippetList:
     """
     Parse git grep output to extract structured snippet data.
     
@@ -152,14 +152,14 @@ def parse_git_grep_output(output: str) -> List[CodeSnippet]:
     based on the output of git grep. Separate snippets are separated by separator lines "--".
     
     Note: All returned CodeSnippet objects are automatically frozen (immutable) for thread safety
-    and data integrity. The freeze() method is called on each snippet before adding it to the result list.
+    and data integrity. The CodeSnippetList ensures all snippets are frozen and the list itself is immutable.
     
     Args:
         output: Raw output from git grep command
 
         
     Returns:
-        List of frozen CodeSnippet objects containing the parsed snippet data.
+        CodeSnippetList containing frozen CodeSnippet objects with the parsed snippet data.
     """
     snippets = []
     current_snippet = None
@@ -200,7 +200,7 @@ def parse_git_grep_output(output: str) -> List[CodeSnippet]:
         current_snippet.freeze()  # Make snippet immutable before adding to list
         snippets.append(current_snippet)
 
-    return snippets
+    return CodeSnippetList(snippets)
 
 def setup_logging(debug: bool = False) -> None:
     """Set up logging configuration for debugging."""
@@ -271,19 +271,18 @@ Examples:
         logger.info("Parsing git grep output...")
         snippets = parse_git_grep_output(input_data)
         
-        logger.info(f"Parsed {len(snippets)} snippets")
+        logger.info(f"Parsed {snippets.get_total_snippets()} snippets")
         
         # Write output to JSON file
         logger.info(f"Writing output to: {args.output}")
         with open(args.output, 'w', encoding='utf-8') as f:
-            # Convert CodeSnippet objects to dictionaries for JSON serialization
-            snippets_data = [snippet.to_dict() for snippet in snippets]
-            json.dump(snippets_data, f, indent=2, ensure_ascii=False)
+            # Use CodeSnippetList's to_dict method for JSON serialization
+            json.dump(snippets.to_dict(), f, indent=2, ensure_ascii=False)
         
-        logger.info(f"Successfully wrote {len(snippets)} snippets to {args.output}")
+        logger.info(f"Successfully wrote {snippets.get_total_snippets()} snippets to {args.output}")
         
         # Print summary to stderr so it doesn't interfere with piping
-        print(f"Parsed {len(snippets)} snippets and saved to {args.output}", file=sys.stderr)
+        print(f"Parsed {snippets.get_total_snippets()} snippets and saved to {args.output}", file=sys.stderr)
         
     except FileNotFoundError as e:
         logger.error(f"File not found: {e}")
