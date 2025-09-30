@@ -13,8 +13,8 @@ import os
 import sys
 from unittest.mock import patch, mock_open
 
-# Add the current directory to the path so we can import git_grep_parser
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add the parent directory to the path so we can import git_grep_parser
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from git_grep_parser import (
     is_separator_line,
