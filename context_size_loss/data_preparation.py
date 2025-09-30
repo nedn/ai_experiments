@@ -26,144 +26,16 @@ import json
 import subprocess
 import shutil
 import sys
+import re
 from pathlib import Path
 from typing import List, Dict, Any
 import logging
+from git_grep_parser import parse_git_grep_output
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
-def parse_git_grep_output(output: str) -> List[Dict[str, Any]]:
-    """
-    Parse git grep output to extract structured snippet data.
-    
-    Git grep output format (from actual RISE repository):
-    - Matching lines: filename:line_number:content
-    - Context lines (before/after): filename-line_number-content (with dashes)
-    - Separator lines: --
-    
-    Example actual output when --context=2 is used:
-$ git grep -n --context 2 sprintf -- *.c *.cc *.h
-extlib/libpng/png.c-639-   {
-extlib/libpng/png.c-640-      wchar_t time_buf[29];
-extlib/libpng/png.c:641:      wsprintf(time_buf, TEXT("%d %S %d %02d:%02d:%02d +0000"),
-extlib/libpng/png.c-642-          ptime->day % 32, short_months[(ptime->month - 1) % 12],
-extlib/libpng/png.c-643-        ptime->year, ptime->hour % 24, ptime->minute % 60,
---
-extlib/libpng/png.c-650-   {
-extlib/libpng/png.c-651-      char near_time_buf[29];
-extlib/libpng/png.c:652:      sprintf(near_time_buf, "%d %s %d %02d:%02d:%02d +0000",
-extlib/libpng/png.c-653-          ptime->day % 32, short_months[(ptime->month - 1) % 12],
-extlib/libpng/png.c-654-          ptime->year, ptime->hour % 24, ptime->minute % 60,
---
-extlib/libpng/pnggccrd.c-5104-#if !defined(PNG_1_0_X)
---
-extlib/libpng/pnggccrd.c-5108-"x86");
-extlib/libpng/pnggccrd.c-5109-         break;
-extlib/libpng/pnggccrd.c:5110:      case 2: sprintf(filnm, "up-%s",
-extlib/libpng/pnggccrd.c-5111-#ifdef PNG_ASSEMBLER_CODE_SUPPORTED
-extlib/libpng/pnggccrd.c-5112-#if !defined(PNG_1_0_X)
---
-extlib/libpng/pnggccrd.c-5116- "x86");
-extlib/libpng/pnggccrd.c-5117-         break;
-extlib/libpng/pnggccrd.c:5118:      case 3: sprintf(filnm, "avg-%s",
-extlib/libpng/pnggccrd.c-5119-#if defined(PNG_ASSEMBLER_CODE_SUPPORTED) && defined(PNG_THREAD_UNSAFE_OK)
-extlib/libpng/pnggccrd.c-5120-#if !defined(PNG_1_0_X)
---
-
-    Our parsing strategy is to define snippet as a contiguous block of lines that contain the sprintf calls 
-    based on the output of git grep. Separate snippets are separated by separator lines "--".
-    
-    Args:
-        output: Raw output from git grep command
-
-        
-    Returns:
-        List of snippet dictionaries. Each snippet dictionary contains the following keys:
-        - file_path: The path to the file containing the snippet
-        - sprintf_line: The line numbers of the sprintf calls. Note that this can be a list of line numbers
-            if there are multiple sprintf calls in the snippet spanning multiple lines.
-        - context_lines: A list of context lines surrounding the sprintf calls.
-        - raw_content: The raw content of the snippet. This includes the sprintf call and the context lines.
-    """
-    snippets = []
-    current_snippet = None
-    SEPARATOR = '--'
-
-    def is_separator_line(line):
-        return line.strip() == SEPARATOR
-        
-    def is_context_line(line):
-        # Context lines have format: filename-line_number- content
-        return line.count('-') >= 2 and ':' not in line
-        
-    def is_matched_line(line):
-        # Matched lines have format: filename:line_number:content
-        return ':' in line and not line.startswith('-')
-        
-    def extract_file_and_line(line):
-        """Extract file path and line number from a git grep line."""
-        if ':' in line:
-            parts = line.split(':', 2)
-            if len(parts) >= 2:
-                file_path = parts[0]
-                line_info = parts[1]
-                
-                # Extract line number
-                line_parts = line_info.split(':', 1)
-                line_number = int(line_parts[0]) if line_parts[0].isdigit() else 0
-                return file_path, line_number
-        return None, None
-
-    for line in output.split('\n'):
-        if not line.strip():
-            continue
-            
-        # Skip separator lines
-        if is_separator_line(line):
-            # Save previous snippet if exists
-            if current_snippet:
-                snippets.append(current_snippet)
-                current_snippet = None
-            continue
-            
-        # Check if this is a matched line (contains sprintf)
-        if is_matched_line(line):
-            file_path, line_number = extract_file_and_line(line)
-            
-            if file_path and line_number:
-                # If we have a current snippet and it's the same file, add to existing snippet
-                if current_snippet and current_snippet["file_path"] == file_path:
-                    # Add this sprintf line to the list
-                    if line_number not in current_snippet["sprintf_line"]:
-                        current_snippet["sprintf_line"].append(line_number)
-                    current_snippet["raw_content"] += "\n" + line
-                else:
-                    # Save previous snippet if exists
-                    if current_snippet:
-                        snippets.append(current_snippet)
-                    
-                    # Start new snippet
-                    current_snippet = {
-                        "file_path": file_path,
-                        "sprintf_line": [line_number],  # List of line numbers
-                        "context_lines": [],
-                        "raw_content": line
-                    }
-                
-        elif current_snippet and is_context_line(line):
-            # This is a context line (before or after the match)
-            # Format: filename-line_number- content
-            current_snippet["context_lines"].append(line)
-            current_snippet["raw_content"] += "\n" + line
-            
-    # Add the last snippet
-    if current_snippet:
-        snippets.append(current_snippet)
-        
-    return snippets
 
 class RISEDataPreparation:
     """Handles the complete data preparation pipeline for RISE sprintf analysis."""
