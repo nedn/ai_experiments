@@ -31,23 +31,35 @@ except ImportError:
     sys.exit(1)
 
 
+def _read_api_key_from_file(file_path: pathlib.Path) -> typing.Optional[str]:
+    """Read API key from a specific .env file."""
+    if not file_path.exists():
+        return None
+    
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('GEMINI_API_KEY='):
+                    key = line.split('=', 1)[1].strip().strip('"\'')
+                    if key:
+                        return key
+    except (IOError, IndexError):
+        pass
+    
+    return None
+
+
 def _load_from_env_file() -> typing.Optional[str]:
     """Load API key from .env file."""
     env_files = ['.env', '.env.local', '.env.production']
-    
+    home_dir = pathlib.Path.home()
+    env_files += [home_dir / env_file for env_file in env_files]
     for env_file in env_files:
         env_path = pathlib.Path(env_file)
-        if env_path.exists():
-            try:
-                with open(env_path, 'r') as f:
-                    for line in f:
-                        line = line.strip()
-                        if line.startswith('GEMINI_API_KEY='):
-                            key = line.split('=', 1)[1].strip().strip('"\'')
-                            if key:
-                                return key
-            except (IOError, IndexError):
-                continue
+        api_key = _read_api_key_from_file(env_path)
+        if api_key:
+            return api_key
     
     return None
 
@@ -75,7 +87,7 @@ def get_api_key() -> str:
     raise ValueError(
         "No API key found. Please provide one of:\n"
         "1. Set GEMINI_API_KEY environment variable\n"
-        "2. Create .env file with GEMINI_API_KEY=your_key\n"
+        "2. Create .env file with GEMINI_API_KEY=your_key (in current directory or $HOME)\n"
         "3. Initialize AIClient(api_key='your_key')"
     )
 
